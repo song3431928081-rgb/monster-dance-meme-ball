@@ -307,9 +307,36 @@ let scene, camera, renderer, clock;
 let stageGroup, monster, ground;
 let monsters=[]; // 克隆体
 const COLORS = {
-  bg:0x0a0612,
-  fog:0x1a0a2a
+  bg:0x0a0210,
+  fog:0x0a0210
 };
+
+// 程序化生成棋盘格纹理（Loopit 风格青色网格地板）
+function makeCheckerboardTexture(size=512, tiles=16, c1=0x4fe0d8, c2=0x2ab5ad){
+  const cvs = document.createElement('canvas');
+  cvs.width=cvs.height=size;
+  const ctx = cvs.getContext('2d');
+  const tile = size/tiles;
+  const col1 = new THREE.Color(c1), col2 = new THREE.Color(c2);
+  for(let y=0;y<tiles;y++){
+    for(let x=0;x<tiles;x++){
+      ctx.fillStyle = ((x+y)%2===0)? '#'+col1.getHexString() : '#'+col2.getHexString();
+      ctx.fillRect(x*tile, y*tile, tile, tile);
+    }
+  }
+  // 网格黑线
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = 1;
+  for(let i=0;i<=tiles;i++){
+    ctx.beginPath(); ctx.moveTo(i*tile,0); ctx.lineTo(i*tile,size); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i*tile); ctx.lineTo(size,i*tile); ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(cvs);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4,4);
+  tex.magFilter = THREE.NearestFilter;
+  return tex;
+}
 
 let webglAvailable = true;
 function showWebGLError(){
@@ -336,16 +363,17 @@ function initThree(){
   try{
     scene = new THREE.Scene();
     scene.background = new THREE.Color(COLORS.bg);
-    scene.fog = new THREE.Fog(COLORS.fog, 12, 30);
+    scene.fog = new THREE.Fog(COLORS.fog, 10, 26);
 
-    camera = new THREE.PerspectiveCamera(72, 1, 0.1, 100);
-    camera.position.set(0, 1.2, 11);
+    camera = new THREE.PerspectiveCamera(68, 1, 0.1, 100);
+    camera.position.set(0, 0.5, 9);
     camera.lookAt(0,0.5,0);
 
     renderer = new THREE.WebGLRenderer({ canvas:document.getElementById('game-canvas'), antialias:true, alpha:false, powerPreference:'high-performance', preserveDrawingBuffer:true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(COLORS.bg, 1);
   }catch(e){
     console.warn('WebGL init failed', e);
     webglAvailable = false;
@@ -353,31 +381,21 @@ function initThree(){
     return false;
   }
 
-  // 灯光
-  const amb = new THREE.AmbientLight(0x6644aa, 0.6); scene.add(amb);
-  const key = new THREE.DirectionalLight(0xffccff, 0.9); key.position.set(3,6,4); key.castShadow=true; scene.add(key);
-  const rim = new THREE.PointLight(0x00ffcc, 1.2, 15); rim.position.set(-3,2,3); scene.add(rim);
-  const back = new THREE.PointLight(0xff00aa, 1.0, 15); back.position.set(0,3,-3); scene.add(back);
+  // 灯光：Loopit 风格明亮顶光 + 柔边
+  const amb = new THREE.AmbientLight(0x3a2a5a, 0.9); scene.add(amb);
+  const key = new THREE.DirectionalLight(0xffffff, 1.25); key.position.set(4,8,5); key.castShadow=true; key.shadow.mapSize.set(1024,1024); key.shadow.camera.left=-8; key.shadow.camera.right=8; key.shadow.camera.top=8; key.shadow.camera.bottom=-8; scene.add(key);
+  const fill = new THREE.DirectionalLight(0xaaccff, 0.35); fill.position.set(-4,3,-3); scene.add(fill);
+  const pink = new THREE.PointLight(0xff33aa, 0.8, 20); pink.position.set(-3,2,3); scene.add(pink);
 
   // 舞台
   stageGroup = new THREE.Group(); scene.add(stageGroup);
 
-  // 地面
-  const ggeo = new THREE.CylinderGeometry(4,4,0.3,32);
-  const gmat = new THREE.MeshStandardMaterial({ color:0x2a1a3a, roughness:0.6, metalness:0.3 });
-  ground = new THREE.Mesh(ggeo,gmat); ground.position.y=-1.6; ground.receiveShadow=true; stageGroup.add(ground);
-
-  // 聚光灯柱（氛围）
-  for(let i=0;i<6;i++){
-    const cone = new THREE.Mesh(
-      new THREE.ConeGeometry(1.2,6,16,1,true),
-      new THREE.MeshBasicMaterial({ color: pick([0xff00aa,0x00ffcc,0xffcc00,0xaa00ff]), transparent:true, opacity:0.08, side:THREE.DoubleSide })
-    );
-    const a = (i/6)*TAU;
-    cone.position.set(Math.cos(a)*3.5,1.5,Math.sin(a)*3.5);
-    cone.rotation.z = Math.PI;
-    stageGroup.add(cone);
-  }
+  // 地面：青色棋盘格平面（Loopit 风格）
+  const floorTex = makeCheckerboardTexture();
+  const floorGeo = new THREE.PlaneGeometry(20,20);
+  const floorMat = new THREE.MeshStandardMaterial({ map:floorTex, roughness:0.85, metalness:0.0, flatShading:true });
+  ground = new THREE.Mesh(floorGeo, floorMat);
+  ground.rotation.x = -Math.PI/2; ground.position.y=-1.6; ground.receiveShadow=true; stageGroup.add(ground);
 
   clock = new THREE.Clock();
   resize();
@@ -410,83 +428,109 @@ function createMonster(type, rng){
   g.userData.parts = {};
   const P = g.userData.parts;
 
-  // 描边材质辅助
+  // Loopit 风格材质：FlatShaded StandardMaterial，无黑色描边
   function mat(color, opts={}){
     return new THREE.MeshStandardMaterial(Object.assign({
-      color, roughness:0.5, metalness:0.1
+      color, roughness:0.95, metalness:0.0, flatShading:true
     }, opts));
   }
-  function toon(color){
-    return new THREE.MeshToonMaterial({ color });
+  function loopit(color){
+    return mat(color);
+  }
+  function skin(color){
+    return new THREE.MeshStandardMaterial({ color, roughness:0.9, metalness:0.0, flatShading:true });
   }
 
-  // 通用：巨大头部、果冻身体
-  const bodyColor = type==='frankenstein'?0x55aa44 : type==='sea_witch'?0xaa44cc : type==='witch_mouse'?0xeebb44 : 0xeeeeee;
+  // 角色主颜色：亮饱和纯色
+  const bodyColor = type==='frankenstein'?0x44cc55 : type==='sea_witch'?0xbb44dd : type==='witch_mouse'?0xffdd44 : 0xf5ead0;
 
-  // --- 身体 ---
+  // --- 身体（桶状）---
   let bodyGeo;
-  if(type==='sea_witch'){ bodyGeo = new THREE.SphereGeometry(0.9,16,12); }
+  if(type==='sea_witch'){ bodyGeo = new THREE.CylinderGeometry(0.85,0.95,1.4,16); }
   else if(type==='frankenstein'){ bodyGeo = new THREE.BoxGeometry(1.1,1.3,0.8); }
-  else { bodyGeo = new THREE.SphereGeometry(0.75,16,12); }
-  const body = new THREE.Mesh(bodyGeo, toon(bodyColor));
+  else { bodyGeo = new THREE.CylinderGeometry(0.7,0.8,1.2,16); }
+  const body = new THREE.Mesh(bodyGeo, loopit(bodyColor));
   body.position.y = 0; body.castShadow=true;
   g.add(body); P.body=body;
 
-  // --- 头部（巨大）---
+  // --- 头部（巨大球形 Loopit 头身比）---
   let headColor = bodyColor;
-  if(type==='pumpkin_king') headColor=0xff7700;
-  if(type==='mummy') headColor=0xf0e6d0;
-  if(type==='dark_witch') headColor=0x22dd44;
-  if(type==='vampire') headColor=0xccddee;
-  const headGeo = type==='pumpkin_king'? new THREE.SphereGeometry(0.7,16,12) : new THREE.SphereGeometry(0.65,16,12);
-  const head = new THREE.Mesh(headGeo, toon(headColor));
-  head.position.y = 1.15; head.castShadow=true;
+  if(type==='pumpkin_king') headColor=0xff6611;
+  if(type==='mummy') headColor=0xfff2dd;
+  if(type==='dark_witch') headColor=0x44cc66;
+  if(type==='vampire') headColor=0xffeedd;
+  const headGeo = type==='pumpkin_king'? new THREE.SphereGeometry(0.8,20,16) : new THREE.SphereGeometry(0.75,20,16);
+  const head = new THREE.Mesh(headGeo, loopit(headColor));
+  head.position.y = 1.25; head.castShadow=true;
   g.add(head); P.head=head;
 
-  // 眼睛
-  function makeEye(x,y,z,r,color){
-    const e = new THREE.Mesh(new THREE.SphereGeometry(r,12,10), new THREE.MeshBasicMaterial({color:color||0x000000}));
+  // --- 脸：大白眼 + 黑瞳孔 + 宽红笑 ---
+  function makeEyeMesh(x,y,z,r,color){
+    const e = new THREE.Mesh(new THREE.SphereGeometry(r,14,12), new THREE.MeshStandardMaterial({color, flatShading:true}));
     e.position.set(x,y,z); return e;
   }
+  function makeSmile(){
+    // 用一个扁椭球 + 旋转做出弧形笑嘴
+    const s = new THREE.Mesh(
+      new THREE.SphereGeometry(0.18, 12, 10),
+      new THREE.MeshStandardMaterial({color:0xcc1122, flatShading:true})
+    );
+    s.scale.set(1.8, 0.35, 0.6);
+    return s;
+  }
   if(type!=='pumpkin_king'){
-    const e1=makeEye(-0.22,1.25,0.55,0.09,0xffffff);
-    const e2=makeEye(0.22,1.25,0.55,0.09,0xffffff);
-    const p1=makeEye(-0.22,1.25,0.62,0.045);
-    const p2=makeEye(0.22,1.25,0.62,0.045);
+    // 大白眼（Loopit 风格大圆眼睛）
+    const e1=makeEyeMesh(-0.25,1.35,0.6,0.13,0xffffff);
+    const e2=makeEyeMesh(0.25,1.35,0.6,0.13,0xffffff);
+    // 黑洞瞳孔
+    const p1=makeEyeMesh(-0.25,1.35,0.72,0.07,0x000000);
+    const p2=makeEyeMesh(0.25,1.35,0.72,0.07,0x000000);
     g.add(e1,e2,p1,p2); P.eyeL=e1; P.eyeR=e2; P.pupilL=p1; P.pupilR=p2;
+    // 宽红笑嘴
+    const smile = makeSmile();
+    smile.position.set(0,1.05,0.75);
+    g.add(smile); P.mouth=smile;
   } else {
-    // 南瓜发光眼
-    const e1=makeEye(-0.2,1.2,0.6,0.1,0xffff00);
-    const e2=makeEye(0.2,1.2,0.6,0.1,0xffff00);
+    // 南瓜大王发光三角眼 + 咧嘴
+    const e1=makeEyeMesh(-0.22,1.25,0.68,0.11,0xffcc00);
+    const e2=makeEyeMesh(0.22,1.25,0.68,0.11,0xffcc00);
     g.add(e1,e2); P.eyeL=e1; P.eyeR=e2;
+    const grin = makeSmile();
+    grin.material.color.setHex(0x220000);
+    grin.scale.set(2.2,0.5,0.8);
+    grin.position.set(0,0.95,0.75);
+    g.add(grin); P.mouth=grin;
   }
 
-  // 嘴
-  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.08,0.05), new THREE.MeshBasicMaterial({color:0x220000}));
-  mouth.position.set(0,0.98,0.6); g.add(mouth); P.mouth=mouth;
+  // --- 四肢：粗短圆柱 + 末端方块手掌/脚掌 ---
+  const limbColor = bodyColor;
+  const handColor = type==='frankenstein'?0x44cc55 : type==='witch_mouse'?0xffdd44 : 0x885533;
+  const footColor = 0x333355;
 
-  // --- 四肢（橡皮管风格）---
-  const limbMat = toon(bodyColor);
-  // 兼容旧版 Three
-  function makeLimb(w,h){
-    const geo = new THREE.CylinderGeometry(w,w,h,8);
-    const m = new THREE.Mesh(geo, limbMat); m.castShadow=true; return m;
+  function makeArm(){
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.2,0.65,12), loopit(limbColor));
+    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.28,0.18,0.22), loopit(handColor));
+    hand.position.y = -0.4;
+    const grp = new THREE.Group();
+    grp.add(arm); grp.add(hand);
+    return grp;
+  }
+  function makeLeg(){
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.22,0.75,12), loopit(limbColor));
+    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.18,0.42), loopit(footColor));
+    foot.position.y = -0.45; foot.position.z = 0.08;
+    const grp = new THREE.Group();
+    grp.add(leg); grp.add(foot);
+    return grp;
   }
 
-  // 左臂
-  const armL = makeLimb(0.13,0.7); armL.position.set(-0.75,0.1,0); P.armL=armL; g.add(armL);
-  // 右臂
-  const armR = makeLimb(0.13,0.7); armR.position.set(0.75,0.1,0); P.armR=armR; g.add(armR);
-  // 左腿
-  const legL = makeLimb(0.16,0.7); legL.position.set(-0.3,-0.9,0); P.legL=legL; g.add(legL);
-  // 右腿
-  const legR = makeLimb(0.16,0.7); legR.position.set(0.3,-0.9,0); P.legR=legR; g.add(legR);
+  const armL = makeArm(); armL.position.set(-0.8,0.15,0); P.armL=armL; g.add(armL);
+  const armR = makeArm(); armR.position.set(0.8,0.15,0); P.armR=armR; g.add(armR);
+  const legL = makeLeg(); legL.position.set(-0.35,-0.85,0); P.legL=legL; g.add(legL);
+  const legR = makeLeg(); legR.position.set(0.35,-0.85,0); P.legR=legR; g.add(legR);
 
   // --- 特征装饰 ---
-  decorateMonster(g, type, mat, toon, makeLimb, rng);
-
-  // 描边（放大反法线）
-  addOutline(g, 0.04);
+  decorateMonster(g, type, mat, loopit, rng);
 
   // 果冻基础缩放
   g.userData.baseScale = 1;
@@ -495,7 +539,7 @@ function createMonster(type, rng){
   return g;
 }
 
-function decorateMonster(g, type, mat, toon, makeLimb, rng){
+function decorateMonster(g, type, mat, loopit, rng){
   const P = g.userData.parts;
   switch(type){
     case 'pumpkin_king':{
@@ -557,7 +601,7 @@ function decorateMonster(g, type, mat, toon, makeLimb, rng){
       // 章鱼触手（6条腿变触手）
       P.legL.visible=false; P.legR.visible=false;
       for(let i=0;i<6;i++){
-        const tent = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.04,0.9,8), toon(0x8822aa));
+        const tent = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.04,0.9,8), loopit(0x8822aa));
         const a = (i/6)*TAU;
         tent.position.set(Math.cos(a)*0.5,-1.1,Math.sin(a)*0.5);
         tent.rotation.z = Math.cos(a)*0.3;
@@ -584,7 +628,7 @@ function decorateMonster(g, type, mat, toon, makeLimb, rng){
     }
     case 'witch_mouse':{
       // 大圆耳
-      const earL = new THREE.Mesh(new THREE.SphereGeometry(0.25,12,10), toon(0xeebb44));
+      const earL = new THREE.Mesh(new THREE.SphereGeometry(0.25,12,10), loopit(0xeebb44));
       earL.position.set(-0.45,1.55,0); g.add(earL);
       const earR = earL.clone(); earR.position.x=0.45; g.add(earR);
       const earL2 = new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8), mat(0xff88aa));

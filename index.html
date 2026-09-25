@@ -311,33 +311,6 @@ const COLORS = {
   fog:0x0a0210
 };
 
-// 程序化生成棋盘格纹理（Loopit 风格青色网格地板）
-function makeCheckerboardTexture(size=512, tiles=16, c1=0x4fe0d8, c2=0x2ab5ad){
-  const cvs = document.createElement('canvas');
-  cvs.width=cvs.height=size;
-  const ctx = cvs.getContext('2d');
-  const tile = size/tiles;
-  const col1 = new THREE.Color(c1), col2 = new THREE.Color(c2);
-  for(let y=0;y<tiles;y++){
-    for(let x=0;x<tiles;x++){
-      ctx.fillStyle = ((x+y)%2===0)? '#'+col1.getHexString() : '#'+col2.getHexString();
-      ctx.fillRect(x*tile, y*tile, tile, tile);
-    }
-  }
-  // 网格黑线
-  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-  ctx.lineWidth = 1;
-  for(let i=0;i<=tiles;i++){
-    ctx.beginPath(); ctx.moveTo(i*tile,0); ctx.lineTo(i*tile,size); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0,i*tile); ctx.lineTo(size,i*tile); ctx.stroke();
-  }
-  const tex = new THREE.CanvasTexture(cvs);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(4,4);
-  tex.magFilter = THREE.NearestFilter;
-  return tex;
-}
-
 let webglAvailable = true;
 function showWebGLError(){
   const cv = document.getElementById('game-canvas');
@@ -390,10 +363,9 @@ function initThree(){
   // 舞台
   stageGroup = new THREE.Group(); scene.add(stageGroup);
 
-  // 地面：青色棋盘格平面（Loopit 风格）
-  const floorTex = makeCheckerboardTexture();
-  const floorGeo = new THREE.PlaneGeometry(20,20);
-  const floorMat = new THREE.MeshStandardMaterial({ map:floorTex, roughness:0.85, metalness:0.0, flatShading:true });
+  // 地面：干净的纯色平面（舞台地板）
+  const floorGeo = new THREE.PlaneGeometry(30,30);
+  const floorMat = new THREE.MeshStandardMaterial({ color:0xd8d2e8, roughness:0.9, metalness:0.0, flatShading:true });
   ground = new THREE.Mesh(floorGeo, floorMat);
   ground.rotation.x = -Math.PI/2; ground.position.y=-1.2; ground.receiveShadow=true; stageGroup.add(ground);
 
@@ -1106,7 +1078,7 @@ function triggerFrenzy(){
   // 场景变墓地
   scene.background = new THREE.Color(0x1a0510);
   scene.fog.color.set(0x2a0a1a);
-  ground.material.color.set(0x2a1a1a);
+  ground.material.color.set(0x3a1a2a);
   // 生成墓碑
   for(let i=0;i<8;i++){
     const tomb = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.8,0.15), new THREE.MeshStandardMaterial({color:0x666666}));
@@ -1128,7 +1100,7 @@ function triggerFrenzy(){
     document.getElementById('stage').classList.remove('fisheye');
     scene.background = new THREE.Color(COLORS.bg);
     scene.fog.color.set(COLORS.fog);
-    ground.material.color.set(0x2a1a3a);
+    ground.material.color.set(0xd8d2e8);
   }, 15000);
 }
 
@@ -1430,9 +1402,6 @@ function animate(){
     animateMonster(m, dt, t+i*0.3, beatTimer);
     m.rotation.y += dt*0.5;
   });
-
-  // 地面旋转（氛围）
-  if(ground) ground.rotation.y += dt*0.1;
 
   applyShake();
 

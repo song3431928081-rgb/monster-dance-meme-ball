@@ -366,8 +366,8 @@ function initThree(){
     scene.fog = new THREE.Fog(COLORS.fog, 10, 26);
 
     camera = new THREE.PerspectiveCamera(68, 1, 0.1, 100);
-    camera.position.set(0, 0.5, 9);
-    camera.lookAt(0,0.5,0);
+    camera.position.set(0, 1.0, 9.5);
+    camera.lookAt(0,0.4,0);
 
     renderer = new THREE.WebGLRenderer({ canvas:document.getElementById('game-canvas'), antialias:true, alpha:false, powerPreference:'high-performance', preserveDrawingBuffer:true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
@@ -395,7 +395,7 @@ function initThree(){
   const floorGeo = new THREE.PlaneGeometry(20,20);
   const floorMat = new THREE.MeshStandardMaterial({ map:floorTex, roughness:0.85, metalness:0.0, flatShading:true });
   ground = new THREE.Mesh(floorGeo, floorMat);
-  ground.rotation.x = -Math.PI/2; ground.position.y=-1.6; ground.receiveShadow=true; stageGroup.add(ground);
+  ground.rotation.x = -Math.PI/2; ground.position.y=-1.35; ground.receiveShadow=true; stageGroup.add(ground);
 
   clock = new THREE.Clock();
   resize();
@@ -443,25 +443,39 @@ function createMonster(type, rng){
 
   // 角色主颜色：亮饱和纯色
   const bodyColor = type==='frankenstein'?0x44cc55 : type==='sea_witch'?0xbb44dd : type==='witch_mouse'?0xffdd44 : 0xf5ead0;
+  const skinColor = type==='vampire'?0xffeedd : 0xf5ead0;
 
-  // --- 身体（桶状）---
-  let bodyGeo;
-  if(type==='sea_witch'){ bodyGeo = new THREE.CylinderGeometry(0.85,0.95,1.4,16); }
-  else if(type==='frankenstein'){ bodyGeo = new THREE.BoxGeometry(1.1,1.3,0.8); }
-  else { bodyGeo = new THREE.CylinderGeometry(0.7,0.8,1.2,16); }
-  const body = new THREE.Mesh(bodyGeo, loopit(bodyColor));
-  body.position.y = 0; body.castShadow=true;
-  g.add(body); P.body=body;
+  // ============ 积木人形身体：胸腔方块 + 腰胯方块 + 脖子方块 ============
+  // 胸腔（上方块，略宽）
+  const chest = new THREE.Mesh(
+    new THREE.BoxGeometry(0.95, 0.7, 0.55),
+    loopit(bodyColor)
+  );
+  chest.position.y = 0.6; chest.castShadow = true;
+  g.add(chest); P.chest = chest;
+  // 腰/胯（下方块，略窄）
+  const waist = new THREE.Mesh(
+    new THREE.BoxGeometry(0.82, 0.42, 0.5),
+    loopit(bodyColor)
+  );
+  waist.position.y = 0.02; waist.castShadow = true;
+  g.add(waist); P.body = waist;
+  // 脖子（小方块）
+  const neck = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22, 0.18, 0.22),
+    loopit(skinColor)
+  );
+  neck.position.y = 1.02; g.add(neck);
 
-  // --- 头部（巨大球形 Loopit 头身比）---
-  let headColor = bodyColor;
+  // --- 头部（方块头，积木风格）---
+  let headColor = skinColor;
   if(type==='pumpkin_king') headColor=0xff6611;
   if(type==='mummy') headColor=0xfff2dd;
   if(type==='dark_witch') headColor=0x44cc66;
   if(type==='vampire') headColor=0xffeedd;
-  const headGeo = type==='pumpkin_king'? new THREE.SphereGeometry(0.8,20,16) : new THREE.SphereGeometry(0.75,20,16);
+  const headGeo = type==='pumpkin_king'? new THREE.BoxGeometry(1.0,0.95,0.95) : new THREE.BoxGeometry(0.88,0.88,0.88);
   const head = new THREE.Mesh(headGeo, loopit(headColor));
-  head.position.y = 1.25; head.castShadow=true;
+  head.position.y = 1.42; head.castShadow=true;
   g.add(head); P.head=head;
 
   // --- 脸：大白眼 + 黑瞳孔 + 宽红笑 ---
@@ -470,64 +484,91 @@ function createMonster(type, rng){
     e.position.set(x,y,z); return e;
   }
   function makeSmile(){
-    // 用一个扁椭球 + 旋转做出弧形笑嘴
     const s = new THREE.Mesh(
-      new THREE.SphereGeometry(0.18, 12, 10),
+      new THREE.SphereGeometry(0.13, 12, 10),
       new THREE.MeshStandardMaterial({color:0xcc1122, flatShading:true})
     );
-    s.scale.set(1.8, 0.35, 0.6);
+    s.scale.set(1.7, 0.35, 0.6);
     return s;
   }
   if(type!=='pumpkin_king'){
-    // 大白眼（Loopit 风格大圆眼睛）
-    const e1=makeEyeMesh(-0.25,1.35,0.6,0.13,0xffffff);
-    const e2=makeEyeMesh(0.25,1.35,0.6,0.13,0xffffff);
-    // 黑洞瞳孔
-    const p1=makeEyeMesh(-0.25,1.35,0.72,0.07,0x000000);
-    const p2=makeEyeMesh(0.25,1.35,0.72,0.07,0x000000);
+    const e1=makeEyeMesh(-0.18,1.48,0.45,0.1,0xffffff);
+    const e2=makeEyeMesh(0.18,1.48,0.45,0.1,0xffffff);
+    const p1=makeEyeMesh(-0.18,1.48,0.53,0.055,0x000000);
+    const p2=makeEyeMesh(0.18,1.48,0.53,0.055,0x000000);
     g.add(e1,e2,p1,p2); P.eyeL=e1; P.eyeR=e2; P.pupilL=p1; P.pupilR=p2;
-    // 宽红笑嘴
     const smile = makeSmile();
-    smile.position.set(0,1.05,0.75);
+    smile.position.set(0,1.25,0.46);
     g.add(smile); P.mouth=smile;
   } else {
-    // 南瓜大王发光三角眼 + 咧嘴
-    const e1=makeEyeMesh(-0.22,1.25,0.68,0.11,0xffcc00);
-    const e2=makeEyeMesh(0.22,1.25,0.68,0.11,0xffcc00);
+    const e1=makeEyeMesh(-0.17,1.4,0.5,0.09,0xffcc00);
+    const e2=makeEyeMesh(0.17,1.4,0.5,0.09,0xffcc00);
     g.add(e1,e2); P.eyeL=e1; P.eyeR=e2;
     const grin = makeSmile();
     grin.material.color.setHex(0x220000);
-    grin.scale.set(2.2,0.5,0.8);
-    grin.position.set(0,0.95,0.75);
+    grin.scale.set(2.0,0.5,0.8);
+    grin.position.set(0,1.12,0.5);
     g.add(grin); P.mouth=grin;
   }
 
-  // --- 四肢：粗短圆柱 + 末端方块手掌/脚掌 ---
-  const limbColor = bodyColor;
+  // ============ 手臂：上臂 + 前臂 + 手（从肩关节旋转）============
+  const armColor = bodyColor;
   const handColor = type==='frankenstein'?0x44cc55 : type==='witch_mouse'?0xffdd44 : 0x885533;
   const footColor = 0x333355;
 
-  function makeArm(){
-    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.2,0.65,12), loopit(limbColor));
-    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.28,0.18,0.22), loopit(handColor));
-    hand.position.y = -0.4;
-    const grp = new THREE.Group();
-    grp.add(arm); grp.add(hand);
-    return grp;
-  }
-  function makeLeg(){
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.22,0.75,12), loopit(limbColor));
-    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.18,0.42), loopit(footColor));
-    foot.position.y = -0.45; foot.position.z = 0.08;
-    const grp = new THREE.Group();
-    grp.add(leg); grp.add(foot);
-    return grp;
+  function makeArm(side){
+    // side: -1 左, 1 右
+    const shoulder = new THREE.Group(); // 旋转轴心在肩关节
+    // 上臂（方块）
+    const upper = new THREE.Mesh(
+      new THREE.BoxGeometry(0.24, 0.46, 0.24),
+      loopit(armColor)
+    );
+    upper.position.y = -0.23; upper.castShadow = true;
+    // 前臂（方块）
+    const fore = new THREE.Mesh(
+      new THREE.BoxGeometry(0.21, 0.42, 0.21),
+      loopit(armColor)
+    );
+    fore.position.y = -0.64; fore.castShadow = true;
+    // 手（方块）
+    const hand = new THREE.Mesh(
+      new THREE.BoxGeometry(0.28, 0.18, 0.18),
+      loopit(handColor)
+    );
+    hand.position.y = -0.92;
+    shoulder.add(upper, fore, hand);
+    return shoulder;
   }
 
-  const armL = makeArm(); armL.position.set(-0.8,0.15,0); P.armL=armL; g.add(armL);
-  const armR = makeArm(); armR.position.set(0.8,0.15,0); P.armR=armR; g.add(armR);
-  const legL = makeLeg(); legL.position.set(-0.35,-0.85,0); P.legL=legL; g.add(legL);
-  const legR = makeLeg(); legR.position.set(0.35,-0.85,0); P.legR=legR; g.add(legR);
+  const armL = makeArm(-1); armL.position.set(-0.6, 0.9, 0); P.armL=armL; g.add(armL);
+  const armR = makeArm(1);  armR.position.set( 0.6, 0.9, 0); P.armR=armR; g.add(armR);
+
+  // ============ 腿：大腿 + 小腿 + 脚（从髋关节旋转，积木方块）============
+  const legColor = bodyColor;
+  function makeLeg(){
+    const hip = new THREE.Group(); // 旋转轴心在髋关节
+    const thigh = new THREE.Mesh(
+      new THREE.BoxGeometry(0.3, 0.52, 0.3),
+      loopit(legColor)
+    );
+    thigh.position.y = -0.29; thigh.castShadow = true;
+    const shin = new THREE.Mesh(
+      new THREE.BoxGeometry(0.26, 0.46, 0.26),
+      loopit(legColor)
+    );
+    shin.position.y = -0.78; shin.castShadow = true;
+    const foot = new THREE.Mesh(
+      new THREE.BoxGeometry(0.28, 0.16, 0.42),
+      loopit(footColor)
+    );
+    foot.position.y = -1.06; foot.position.z = 0.08;
+    hip.add(thigh, shin, foot);
+    return hip;
+  }
+
+  const legL = makeLeg(); legL.position.set(-0.23, -0.18, 0); P.legL=legL; g.add(legL);
+  const legR = makeLeg(); legR.position.set( 0.23, -0.18, 0); P.legR=legR; g.add(legR);
 
   // --- 特征装饰 ---
   decorateMonster(g, type, mat, loopit, rng);
@@ -543,116 +584,119 @@ function decorateMonster(g, type, mat, loopit, rng){
   const P = g.userData.parts;
   switch(type){
     case 'pumpkin_king':{
-      // 南瓜茎
+      // 南瓜茎（头顶）
       const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.12,0.25,8), mat(0x335522));
-      stem.position.y=1.8; g.add(stem);
-      // 南瓜棱
+      stem.position.y=1.95; g.add(stem);
+      // 南瓜棱（环绕方块头）
       for(let i=0;i<6;i++){
-        const rib = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,1.3,6), mat(0xcc5500));
-        rib.position.set(0,1.15,0); rib.rotation.y=(i/6)*TAU; rib.position.x=Math.cos((i/6)*TAU)*0.55;
-        rib.rotation.z=Math.PI/2; g.add(rib);
+        const rib = new THREE.Mesh(new THREE.BoxGeometry(0.06,1.0,0.06), mat(0xcc5500));
+        rib.position.y=1.42; rib.rotation.y=(i/6)*TAU;
+        rib.position.x=Math.cos((i/6)*TAU)*0.56;
+        rib.position.z=Math.sin((i/6)*TAU)*0.56;
+        g.add(rib);
       }
-      // 骷髅身体（肋骨）
+      // 骷髅身体（肋骨，覆盖胸腔+腰）
       for(let i=0;i<4;i++){
-        const rib = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.4,6), mat(0xdddddd));
-        rib.position.y=0.4-i*0.25; rib.rotation.z=Math.PI/2; g.add(rib);
+        const rib = new THREE.Mesh(new THREE.BoxGeometry(1.0,0.05,0.05), mat(0xdddddd));
+        rib.position.y=0.85-i*0.26; g.add(rib);
       }
       break;
     }
     case 'stitched_bride':{
-      // 高耸白发
+      // 高耸白发（头顶）
       const hair = new THREE.Mesh(new THREE.ConeGeometry(0.5,1.2,12), mat(0xffffff));
-      hair.position.y=1.8; g.add(hair);
-      // 婚纱（身体套）
-      const dress = new THREE.Mesh(new THREE.ConeGeometry(1.0,1.2,16,1,true), mat(0xffffff,{transparent:true,opacity:0.85,side:THREE.DoubleSide}));
-      dress.position.y=-0.4; dress.rotation.x=Math.PI; g.add(dress); P.dress=dress;
-      // 缝线
+      hair.position.y=2.0; g.add(hair);
+      // 婚纱（身体套，从腰往下）
+      const dress = new THREE.Mesh(new THREE.ConeGeometry(1.0,1.3,16,1,true), mat(0xffffff,{transparent:true,opacity:0.85,side:THREE.DoubleSide}));
+      dress.position.y=-0.35; dress.rotation.x=Math.PI; g.add(dress); P.dress=dress;
+      // 缝线（脸部）
       const stitch = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.5,0.02), mat(0x666666));
-      stitch.position.set(0,1.0,0.62); g.add(stitch);
+      stitch.position.set(0,1.25,0.62); g.add(stitch);
       break;
     }
     case 'mummy':{
-      // 卫生纸条纹
+      // 卫生纸条纹（身体）
       for(let i=0;i<8;i++){
-        const band = new THREE.Mesh(new THREE.TorusGeometry(0.65-i*0.06,0.05,8,24), mat(0xf0e6d0));
-        band.position.y=0.6-i*0.18; band.rotation.x=Math.PI/2; g.add(band);
+        const band = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.06,0.6), mat(0xf0e6d0));
+        band.position.y=0.9-i*0.16; g.add(band);
       }
+      // 头部绷带
       for(let i=0;i<5;i++){
-        const band = new THREE.Mesh(new THREE.TorusGeometry(0.55,0.04,8,20), mat(0xe0d6c0));
-        band.position.y=1.3-i*0.12; band.rotation.x=Math.PI/2; g.add(band);
+        const band = new THREE.Mesh(new THREE.BoxGeometry(0.95,0.05,0.95), mat(0xe0d6c0));
+        band.position.y=1.75-i*0.14; g.add(band);
       }
       break;
     }
     case 'vampire':{
-      // 尖牙
+      // 尖牙（嘴部）
       const f1 = new THREE.Mesh(new THREE.ConeGeometry(0.05,0.15,6), mat(0xffffff));
-      f1.position.set(-0.1,0.95,0.6); f1.rotation.x=Math.PI; g.add(f1);
+      f1.position.set(-0.1,1.12,0.5); f1.rotation.x=Math.PI; g.add(f1);
       const f2 = f1.clone(); f2.position.x=0.1; g.add(f2);
-      // 斗篷
-      const cape = new THREE.Mesh(new THREE.ConeGeometry(1.1,1.6,12,1,true), mat(0x440022,{side:THREE.DoubleSide}));
-      cape.position.y=0; cape.rotation.x=Math.PI; g.add(cape); P.cape=cape;
-      // 蝙蝠翅膀
+      // 斗篷（从腰往下）
+      const cape = new THREE.Mesh(new THREE.ConeGeometry(1.1,1.7,12,1,true), mat(0x440022,{side:THREE.DoubleSide}));
+      cape.position.y=-0.2; cape.rotation.x=Math.PI; g.add(cape); P.cape=cape;
+      // 蝙蝠翅膀（胸腔两侧）
       const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.4,0.05), mat(0x220011));
-      wingL.position.set(-0.9,0.3,0); wingL.rotation.y=0.5; g.add(wingL); P.wingL=wingL;
+      wingL.position.set(-0.9,0.5,0); wingL.rotation.y=0.5; g.add(wingL); P.wingL=wingL;
       const wingR = wingL.clone(); wingR.position.x=0.9; wingR.rotation.y=-0.5; g.add(wingR); P.wingR=wingR;
       break;
     }
     case 'sea_witch':{
-      // 章鱼触手（6条腿变触手）
+      // 章鱼触手（替换腿）
       P.legL.visible=false; P.legR.visible=false;
       for(let i=0;i<6;i++){
-        const tent = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.04,0.9,8), loopit(0x8822aa));
+        const tent = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.04,1.0,8), loopit(0x8822aa));
         const a = (i/6)*TAU;
-        tent.position.set(Math.cos(a)*0.5,-1.1,Math.sin(a)*0.5);
+        tent.position.set(Math.cos(a)*0.5,-1.2,Math.sin(a)*0.5);
         tent.rotation.z = Math.cos(a)*0.3;
         tent.castShadow=true; g.add(tent);
         if(!P.tentacles) P.tentacles=[]; P.tentacles.push(tent);
       }
-      // 白色大背头
+      // 白色大背头（头顶）
       const hair = new THREE.Mesh(new THREE.SphereGeometry(0.6,12,10), mat(0xffffff));
-      hair.position.y=1.5; hair.scale.set(1,0.8,1); g.add(hair);
+      hair.position.y=1.75; hair.scale.set(1,0.8,1); g.add(hair);
       break;
     }
     case 'dark_witch':{
-      // 黑角
+      // 黑角（头顶两侧）
       const h1 = new THREE.Mesh(new THREE.ConeGeometry(0.12,0.4,8), mat(0x111111));
-      h1.position.set(-0.3,1.65,0); h1.rotation.z=0.3; g.add(h1);
+      h1.position.set(-0.3,1.78,0); h1.rotation.z=0.3; g.add(h1);
       const h2 = h1.clone(); h2.position.x=0.3; h2.rotation.z=-0.3; g.add(h2);
-      // 绿火（头顶粒子感）
+      // 绿火（头顶）
       const fire = new THREE.Mesh(new THREE.ConeGeometry(0.2,0.5,8), mat(0x33ff33,{transparent:true,opacity:0.7}));
-      fire.position.y=1.75; g.add(fire); P.fire=fire;
-      // 长袍
-      const robe = new THREE.Mesh(new THREE.ConeGeometry(1.1,1.5,16,1,true), mat(0x220044,{side:THREE.DoubleSide}));
-      robe.position.y=-0.5; robe.rotation.x=Math.PI; g.add(robe); P.robe=robe;
+      fire.position.y=1.88; g.add(fire); P.fire=fire;
+      // 长袍（从腰往下）
+      const robe = new THREE.Mesh(new THREE.ConeGeometry(1.1,1.6,16,1,true), mat(0x220044,{side:THREE.DoubleSide}));
+      robe.position.y=-0.35; robe.rotation.x=Math.PI; g.add(robe); P.robe=robe;
       break;
     }
     case 'witch_mouse':{
-      // 大圆耳
+      // 大圆耳（头两侧）
       const earL = new THREE.Mesh(new THREE.SphereGeometry(0.25,12,10), loopit(0xeebb44));
-      earL.position.set(-0.45,1.55,0); g.add(earL);
-      const earR = earL.clone(); earR.position.x=0.45; g.add(earR);
+      earL.position.set(-0.5,1.62,0); g.add(earL);
+      const earR = earL.clone(); earR.position.x=0.5; g.add(earR);
       const earL2 = new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8), mat(0xff88aa));
-      earL2.position.set(-0.45,1.55,0.1); g.add(earL2);
-      const earR2 = earL2.clone(); earR2.position.x=0.45; g.add(earR2);
+      earL2.position.set(-0.5,1.62,0.1); g.add(earL2);
+      const earR2 = earL2.clone(); earR2.position.x=0.5; g.add(earR2);
       // 巫师袍
-      const robe = new THREE.Mesh(new THREE.ConeGeometry(0.9,1.3,16,1,true), mat(0x331155,{side:THREE.DoubleSide}));
+      const robe = new THREE.Mesh(new THREE.ConeGeometry(0.9,1.4,16,1,true), mat(0x331155,{side:THREE.DoubleSide}));
       robe.position.y=-0.3; robe.rotation.x=Math.PI; g.add(robe);
-      // 巫师帽
-      const hat = new THREE.Mesh(new THREE.ConeGeometry(0.4,0.7,12), mat(0x220044));
-      hat.position.y=1.75; g.add(hat);
+      // 巫师帽（头顶）
+      const hat = new THREE.Mesh(new THREE.ConeGeometry(0.42,0.75,12), mat(0x220044));
+      hat.position.y=1.95; g.add(hat);
       break;
     }
     case 'frankenstein':{
-      // 螺丝钉脖子
+      // 螺丝钉脖子（脖子两侧）
       const b1 = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.2,8), mat(0x888888));
-      b1.position.set(-0.5,0.85,0); b1.rotation.z=Math.PI/2; g.add(b1);
+      b1.position.set(-0.5,1.0,0); b1.rotation.z=Math.PI/2; g.add(b1);
       const b2 = b1.clone(); b2.position.x=0.5; g.add(b2);
-      // 平头
-      const flat = new THREE.Mesh(new THREE.BoxGeometry(1.0,0.2,0.9), mat(0x333333));
-      flat.position.y=1.55; g.add(flat);
-      // 伤疤
+      // 平头（头顶）
+      const flat = new THREE.Mesh(new THREE.BoxGeometry(1.0,0.2,0.95), mat(0x333333));
+      flat.position.y=1.9; g.add(flat);
+      // 伤疤（脸部）
       const scar = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.03,0.02), mat(0x886644));
-      scar.position.set(0.15,1.15,0.62); g.add(scar);
+      scar.position.set(0.15,1.32,0.62); g.add(scar);
       break;
     }
   }
@@ -712,34 +756,51 @@ function animateMonster(m, dt, t, beat){
   const beatPhase = (t % beatDur)/beatDur;
   const beatPunch = Math.pow(1-beatPhase, 3); // 节拍冲击
 
-  // 基础律动
-  const baseBob = Math.sin(t*bpm*TAU/60)*0.08;
-  m.position.y = baseBob;
+  // 基础律动（魔性弹动：重拍下沉+胸腔pop）
+  const beatFreq = bpm*TAU/60;
+  const baseBob = Math.sin(t*beatFreq)*0.1;
+  const popBob = Math.abs(Math.sin(t*beatFreq*0.5))*0.12; // 每两拍一次大pop
+  m.position.y = baseBob + popBob;
+
+  // 胸腔beat pop（魔性核心：身体跟着重拍抖）
+  if(P.chest){
+    P.chest.position.y = 0.6 + Math.abs(Math.sin(t*beatFreq))*0.06;
+    P.chest.scale.y = 1 + beatPunch*0.08;
+  }
 
   // 果冻挤压
-  const squash = 1 - beatPunch*0.15;
-  const stretch = 1 + beatPunch*0.15;
+  const squash = 1 - beatPunch*0.18;
+  const stretch = 1 + beatPunch*0.18;
   m.scale.y = stretch * m.userData.stretch;
   m.scale.x = squash * m.userData.squash;
   m.scale.z = squash * m.userData.squash;
+
+  // 头部默认随节拍轻点（除非动作本身控制头）
+  const headControlled = ['headbang','head_fly','chicken','shake','dab'].includes(currentMove);
+  if(P.head && !headControlled){
+    P.head.rotation.x = Math.abs(Math.sin(t*beatFreq))*0.12;
+    P.head.rotation.z = Math.sin(t*beatFreq*0.5)*0.08;
+  }
 
   // 随机变异（小概率）
   if(Math.random()<0.003){ triggerMutation(m); }
 
   switch(currentMove){
     case 'twerk':
-      m.rotation.z = Math.sin(t*8)*0.15;
-      if(P.legL) P.legL.rotation.x = Math.sin(t*8)*0.3;
-      if(P.legR) P.legR.rotation.x = Math.sin(t*8+Math.PI)*0.3;
+      m.rotation.z = Math.sin(t*8)*0.25;
+      if(P.legL) P.legL.rotation.x = Math.sin(t*8)*0.4;
+      if(P.legR) P.legR.rotation.x = Math.sin(t*8+Math.PI)*0.4;
+      if(P.chest) P.chest.position.y = 0.6 + Math.sin(t*8)*0.08;
       break;
     case 'headbang':
-      if(P.head) P.head.rotation.x = Math.sin(t*10)*0.8;
-      m.position.y = baseBob + Math.abs(Math.sin(t*10))*0.2;
+      if(P.head) P.head.rotation.x = Math.sin(t*10)*0.9;
+      m.position.y = baseBob + Math.abs(Math.sin(t*10))*0.25;
       break;
     case 'floss':
-      if(P.armL) P.armL.rotation.z = Math.sin(t*6)*1.2;
-      if(P.armR) P.armR.rotation.z = Math.sin(t*6+Math.PI)*1.2;
-      if(P.legL) P.legL.rotation.x = Math.sin(t*3)*0.4;
+      if(P.armL) P.armL.rotation.z = Math.sin(t*6)*1.4;
+      if(P.armR) P.armR.rotation.z = Math.sin(t*6+Math.PI)*1.4;
+      if(P.legL) P.legL.rotation.x = Math.sin(t*3)*0.5;
+      m.rotation.z = Math.sin(t*6)*0.1;
       break;
     case 'robot':
       const rt = Math.floor(t*4)/4;
@@ -749,7 +810,7 @@ function animateMonster(m, dt, t, beat){
       break;
     case 'breakdance':
       m.rotation.z = t*4;
-      m.position.y = -0.5;
+      m.position.y = -0.7;
       if(P.legL) P.legL.rotation.x = Math.sin(t*8)*0.8;
       if(P.legR) P.legR.rotation.x = Math.sin(t*8+1)*0.8;
       break;
@@ -783,7 +844,7 @@ function animateMonster(m, dt, t, beat){
       break;
     case 'ground_roll':
       m.rotation.z = t*3;
-      m.position.y = -1.2;
+      m.position.y = -0.75;
       break;
     case 'limb_tie':
       if(P.armL) P.armL.rotation.z = 2.5 + Math.sin(t)*0.3;
@@ -793,30 +854,34 @@ function animateMonster(m, dt, t, beat){
       break;
     case 'head_fly':
       if(P.head){
-        P.head.position.y = 1.15 + Math.sin(t*4)*0.5;
+        P.head.position.y = 1.42 + Math.sin(t*4)*0.5;
         P.head.rotation.z = t*2;
       }
       break;
     case 'shimmy':
-      m.rotation.z = Math.sin(t*10)*0.1;
-      if(P.armL) P.armL.rotation.z = Math.sin(t*10)*1.5 + 0.3;
-      if(P.armR) P.armR.rotation.z = Math.sin(t*10+Math.PI)*1.5 - 0.3;
+      m.rotation.z = Math.sin(t*10)*0.15;
+      if(P.armL) P.armL.rotation.z = Math.sin(t*10)*1.7 + 0.3;
+      if(P.armR) P.armR.rotation.z = Math.sin(t*10+Math.PI)*1.7 - 0.3;
+      if(P.chest) P.chest.position.y = 0.6 + Math.sin(t*10)*0.06;
       break;
     case 'shake':
-      m.rotation.z = Math.sin(t*20)*0.2;
-      if(P.head) P.head.rotation.z = Math.sin(t*25)*0.3;
-      m.position.x = Math.sin(t*15)*0.15;
+      m.rotation.z = Math.sin(t*20)*0.25;
+      if(P.head) P.head.rotation.z = Math.sin(t*25)*0.35;
+      m.position.x = Math.sin(t*15)*0.2;
+      if(P.armL) P.armL.rotation.z = Math.sin(t*22)*0.8;
+      if(P.armR) P.armR.rotation.z = Math.sin(t*22+1)*0.8;
       break;
     case 'vogue':
-      if(P.armR) P.armR.rotation.z = -1.2 + Math.sin(t*3)*0.3;
-      if(P.armL) P.armL.rotation.z = 1.2 - Math.sin(t*3)*0.3;
-      m.rotation.y = Math.sin(t*2)*0.3;
+      if(P.armR) P.armR.rotation.z = -1.3 + Math.sin(t*3)*0.4;
+      if(P.armL) P.armL.rotation.z = 1.3 - Math.sin(t*3)*0.4;
+      m.rotation.y = Math.sin(t*2)*0.4;
+      if(P.head) P.head.rotation.z = Math.sin(t*3)*0.15;
       break;
     case 'dab':
-      if(P.armL) P.armL.rotation.z = -2.2;
-      if(P.armR) P.armR.rotation.z = 1.0 + Math.sin(t*4)*0.2;
-      if(P.head) P.head.rotation.z = -0.5;
-      m.rotation.y = -0.3;
+      if(P.armL) P.armL.rotation.z = -2.3;
+      if(P.armR) P.armR.rotation.z = 1.1 + Math.sin(t*4)*0.2;
+      if(P.head) P.head.rotation.z = -0.6;
+      m.rotation.y = -0.35;
       break;
     case 'naenae':
       if(P.armR) P.armR.rotation.z = -1.5 + Math.sin(t*5)*0.5;
@@ -833,16 +898,17 @@ function animateMonster(m, dt, t, beat){
     case 'chicken':
       if(P.armL) P.armL.rotation.z = 0.8 + Math.sin(t*12)*0.4;
       if(P.armR) P.armR.rotation.z = -0.8 - Math.sin(t*12)*0.4;
-      if(P.head) P.head.position.y = 1.15 + Math.sin(t*8)*0.08;
+      if(P.head) P.head.position.y = 1.42 + Math.sin(t*8)*0.08;
       m.position.y = baseBob + Math.abs(Math.sin(t*8))*0.1;
       break;
     case 'wiggle':
-      m.rotation.z = Math.sin(t*12)*0.25;
-      m.position.x = Math.sin(t*6)*0.2;
-      if(P.armL) P.armL.rotation.z = Math.sin(t*12)*1.0;
-      if(P.armR) P.armR.rotation.z = Math.sin(t*12+0.5)*1.0;
-      if(P.legL) P.legL.rotation.x = Math.sin(t*12)*0.3;
-      if(P.legR) P.legR.rotation.x = Math.sin(t*12+Math.PI)*0.3;
+      m.rotation.z = Math.sin(t*12)*0.3;
+      m.position.x = Math.sin(t*6)*0.25;
+      if(P.armL) P.armL.rotation.z = Math.sin(t*12)*1.2;
+      if(P.armR) P.armR.rotation.z = Math.sin(t*12+0.5)*1.2;
+      if(P.legL) P.legL.rotation.x = Math.sin(t*12)*0.4;
+      if(P.legR) P.legR.rotation.x = Math.sin(t*12+Math.PI)*0.4;
+      if(P.chest) P.chest.position.y = 0.6 + Math.sin(t*12)*0.05;
       break;
     case 'gangnam':
       if(P.armL) P.armL.rotation.z = -1.5 + Math.sin(t*4)*0.3;
@@ -859,12 +925,13 @@ function animateMonster(m, dt, t, beat){
       m.rotation.y = ft<2? 0.2 : -0.2;
       break;
     case 'orange_justice':
-      if(P.armL) P.armL.rotation.z = Math.sin(t*8)*1.2 + 0.3;
-      if(P.armR) P.armR.rotation.z = Math.sin(t*8+1)*1.2 - 0.3;
-      if(P.legL) P.legL.rotation.x = Math.sin(t*4)*0.3;
-      if(P.legR) P.legR.rotation.x = Math.sin(t*4+Math.PI)*0.3;
-      m.rotation.z = Math.sin(t*8)*0.15;
-      m.position.y = baseBob + Math.abs(Math.sin(t*8))*0.12;
+      if(P.armL) P.armL.rotation.z = Math.sin(t*8)*1.4 + 0.3;
+      if(P.armR) P.armR.rotation.z = Math.sin(t*8+1)*1.4 - 0.3;
+      if(P.legL) P.legL.rotation.x = Math.sin(t*4)*0.4;
+      if(P.legR) P.legR.rotation.x = Math.sin(t*4+Math.PI)*0.4;
+      m.rotation.z = Math.sin(t*8)*0.2;
+      m.position.y = baseBob + Math.abs(Math.sin(t*8))*0.15;
+      if(P.chest) P.chest.position.y = 0.6 + Math.sin(t*8)*0.06;
       break;
   }
 
@@ -877,8 +944,8 @@ function animateMonster(m, dt, t, beat){
   // 瞳孔乱动
   if(P.pupilL && P.pupilR){
     const pdx = Math.sin(t*3)*0.03, pdy = Math.cos(t*2.3)*0.02;
-    P.pupilL.position.x = -0.22 + pdx; P.pupilL.position.y = 1.25 + pdy;
-    P.pupilR.position.x = 0.22 + pdx; P.pupilR.position.y = 1.25 + pdy;
+    P.pupilL.position.x = -0.18 + pdx; P.pupilL.position.y = 1.48 + pdy;
+    P.pupilR.position.x = 0.18 + pdx; P.pupilR.position.y = 1.48 + pdy;
   }
   // 嘴巴说话节奏
   if(P.mouth){
@@ -892,7 +959,7 @@ function animateMonster(m, dt, t, beat){
   }
   if(P.wingL){ P.wingL.rotation.y = 0.5 + Math.sin(t*10)*0.4; }
   if(P.wingR){ P.wingR.rotation.y = -0.5 - Math.sin(t*10)*0.4; }
-  if(P.fire){ P.fire.scale.y = 1 + Math.sin(t*15)*0.4; P.fire.position.y = 1.75 + Math.sin(t*10)*0.05; }
+  if(P.fire){ P.fire.scale.y = 1 + Math.sin(t*15)*0.4; P.fire.position.y = 1.88 + Math.sin(t*10)*0.05; }
   if(P.cape){ P.cape.rotation.z = Math.sin(t*3)*0.15; }
   if(P.dress){ P.dress.rotation.z = Math.sin(t*3)*0.1; }
 }
@@ -934,8 +1001,8 @@ function triggerMutation(m){
     case 'tongue_out':
       if(P.mouth){
         P.mouth.scale.set(1.5,3,1);
-        P.mouth.position.y = 0.85;
-        setTimeout(()=>{ P.mouth.scale.set(1,1,1); P.mouth.position.y=0.98; }, 700);
+        P.mouth.position.y = 1.1;
+        setTimeout(()=>{ P.mouth.scale.set(1,1,1); P.mouth.position.y=1.25; }, 700);
       }
       break;
     case 'cross_eyes':
@@ -1021,7 +1088,7 @@ function triggerFrenzy(){
   for(let i=0;i<8;i++){
     const tomb = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.8,0.15), new THREE.MeshStandardMaterial({color:0x666666}));
     const a = (i/8)*TAU;
-    tomb.position.set(Math.cos(a)*3.2, -1.1, Math.sin(a)*3.2);
+    tomb.position.set(Math.cos(a)*3.2, -0.95, Math.sin(a)*3.2);
     tomb.rotation.z = rand(-0.2,0.2);
     stageGroup.add(tomb);
     setTimeout(()=>{ if(tomb.parent) tomb.parent.remove(tomb); }, 15000);
@@ -1070,11 +1137,11 @@ let cameraShake = 0;
 function applyShake(){
   if(cameraShake>0.01){
     camera.position.x = rand(-cameraShake,cameraShake);
-    camera.position.y = 1.2 + rand(-cameraShake,cameraShake)*0.5;
+    camera.position.y = 1.0 + rand(-cameraShake,cameraShake)*0.5;
     cameraShake *= 0.9;
   } else {
     camera.position.x = lerp(camera.position.x, 0, 0.1);
-    camera.position.y = lerp(camera.position.y, 1.2, 0.1);
+    camera.position.y = lerp(camera.position.y, 1.0, 0.1);
   }
 }
 

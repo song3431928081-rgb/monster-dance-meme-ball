@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>怪物大乱摇：暗黑Meme舞会</title>
+<title>Monster Meme Ball: Dark Dance Madness</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
-  html, body { width:100%; height:100%; overflow:hidden; background:#000; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; touch-action:none; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#000; font-family: "Comic Sans MS", "Trebuchet MS", "Microsoft YaHei", sans-serif; touch-action:none; }
   #game-root { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
   #game-canvas { display:block; width:100%; height:100%; touch-action:none; }
   /* 竖屏舞台容器 */
@@ -99,10 +99,10 @@
     <canvas id="game-canvas"></canvas>
 
     <!-- 抽象值条 -->
-    <div id="meter-wrap"><div id="meter-label">🔥 抽象值</div><div id="meter-fill"></div></div>
+    <div id="meter-wrap"><div id="meter-label">🔥 ABSURDITY</div><div id="meter-fill"></div></div>
 
     <!-- 录制指示 -->
-    <div id="rec-indicator"><div id="rec-dot"></div> 录制中...</div>
+    <div id="rec-indicator"><div id="rec-dot"></div> REC...</div>
 
     <!-- 特效层 -->
     <div id="fx-glitch"></div>
@@ -117,48 +117,49 @@
     <!-- UI -->
     <div id="ui">
       <div id="top-left" class="btn-row">
-        <div class="btn-wrap"><button class="btn" id="btn-mute" title="静音">🔇</button></div>
+        <div class="btn-wrap"><button class="btn" id="btn-mute" title="Mute SFX">🔇</button></div>
       </div>
       <div id="top-right" class="btn-row">
-        <div class="btn-wrap"><button class="btn" id="btn-frenzy" title="暴走">💀</button></div>
+        <div class="btn-wrap"><button class="btn" id="btn-frenzy" title="Frenzy">💀</button></div>
       </div>
       <div id="bottom-left" class="btn-row">
-        <div class="btn-wrap"><button class="btn" id="btn-change" title="换人">🔄</button></div>
+        <div class="btn-wrap"><button class="btn" id="btn-change" title="Swap Monster">🔄</button></div>
       </div>
       <div id="bottom-right" class="btn-row">
-        <div class="btn-wrap"><button class="btn" id="btn-share" title="分享">📤</button></div>
+        <div class="btn-wrap"><button class="btn" id="btn-share" title="Share">📤</button></div>
       </div>
       <div id="bottom-center" class="btn-row">
-        <div class="btn-wrap"><button class="btn" id="btn-record" title="录制" style="width:64px;height:64px;font-size:26px;">⏺️</button></div>
+        <div class="btn-wrap"><button class="btn" id="btn-bgm" title="BGM" style="width:64px;height:64px;font-size:26px;">🎵</button></div>
+        <div class="btn-wrap"><button class="btn" id="btn-record" title="Record" style="width:64px;height:64px;font-size:26px;">⏺️</button></div>
       </div>
     </div>
 
     <!-- 开始界面 -->
     <div id="start-screen">
-      <h1>怪物大乱摇</h1>
-      <div class="sub">🎃 暗黑 Meme 舞会 🦇</div>
-      <div class="slogan">不评分，不通关，只发疯。<br>今天你摇了吗？</div>
-      <button id="start-btn">开始发疯 ▶</button>
-      <div class="hint">📱 点按/滑动/长按/双指/连点/摇手机<br>⌨️ 空格抽搐 · 方向键滑动 · ↑长按 · M静音</div>
+      <h1>MONSTER<br>MEME BALL</h1>
+      <div class="sub">🎃 Dark Meme Dance Party 🦇</div>
+      <div class="slogan">No scores, no levels, just vibes.<br>Did you shake today?</div>
+      <button id="start-btn">START VIBING ▶</button>
+      <div class="hint">📱 Tap / Swipe / Long-press / Pinch / Rapid-tap / Shake<br>⌨️ Space=spaz · Arrows=swipe · ↑=hold · M=mute · B=BGM</div>
     </div>
 
     <!-- 分享弹窗 -->
     <div id="share-modal">
       <div id="share-box">
-        <h3>📤 分享你的抽象舞</h3>
-        <div style="color:#aaa;font-size:13px;">挑战码（好友跳同一段，但角色不同）</div>
+        <h3>📤 Share Your Dance</h3>
+        <div style="color:#aaa;font-size:13px;">Challenge code (same dance, different monster)</div>
         <div id="share-code">------</div>
-        <button class="share-btn" id="copy-code">复制挑战码</button>
-        <button class="share-btn" id="gen-gif">导出表情包</button>
-        <button class="share-btn" id="close-share">关闭</button>
-        <div style="color:#666;font-size:11px;margin-top:12px;">提示：可截图分享到抖音/TikTok/B站</div>
+        <button class="share-btn" id="copy-code">Copy Code</button>
+        <button class="share-btn" id="gen-gif">Save Snapshot</button>
+        <button class="share-btn" id="close-share">Close</button>
+        <div style="color:#666;font-size:11px;margin-top:12px;">Tip: Screenshot to share on TikTok / Bilibili / YouTube</div>
       </div>
     </div>
 
     <!-- 横屏提示 -->
     <div id="rotate-hint">
       <div style="font-size:50px;">📱↻</div>
-      <div style="margin-top:14px;">请竖屏体验效果更佳</div>
+      <div style="margin-top:14px;">Rotate to portrait for the best vibe</div>
     </div>
   </div>
 </div>
@@ -167,8 +168,8 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script>
 /* ============================================================
-   《怪物大乱摇：暗黑Meme舞会》
-   单文件 HTML + Three.js + Web Audio API
+   Monster Meme Ball: Dark Dance Madness
+   Single-file HTML + Three.js + Web Audio API
    ============================================================ */
 (function(){
 'use strict';
@@ -248,12 +249,56 @@ const AudioEngine = {
   playBeat(){
     this.beatCount++;
     const b=this.beatCount%4;
-    if(b===0){ this.kick(); this.bass(); }
-    else if(b===2){ this.snare(); }
-    else { this.hat(); }
+    // BGM 已自带鼓点，只在 BGM 关闭时播放鼓
+    if(!this.bgmPlaying){
+      if(b===0){ this.kick(); this.bass(); }
+      else if(b===2){ this.snare(); }
+      else { this.hat(); }
+    }
     // 偶尔加花
     if(Math.random()<0.15){ const notes=[220,277,330,415,494]; this.suona(pick(notes)); }
     if(Math.random()<0.05){ pick([this.bark,this.fart,this.scream,this.spring]).call(this); }
+  },
+  // ---------- 背景音乐 BGM（程序化循环）----------
+  bgmPlaying:false, bgmStep:0, bgmTimer:null,
+  // 32-step meme melody (frequencies in Hz, 0=rest) — bouncy silly tune
+  bgmMelody:[
+    523,659,784,659, 523,659,784,880, 784,659,587,523, 0,659,784,523,
+    523,587,659,784, 880,784,659,587, 523,0,659,0, 784,659,523,0
+  ],
+  bgmBass:[
+    131,0,0,0, 196,0,0,0, 220,0,0,0, 175,0,0,0,
+    131,0,0,0, 196,0,0,0, 220,0,175,0, 131,0,0,0
+  ],
+  startBGM(){
+    if(this.bgmPlaying || !this.ctx || this.muted) return;
+    this.bgmPlaying = true;
+    this.bgmStep = 0;
+    const stepDur = 60/this.bpm/4; // 16th note
+    const scheduleStep = ()=>{
+      if(!this.bgmPlaying) return;
+      const step = this.bgmStep % 32;
+      const m = this.bgmMelody[step];
+      if(m) this.tone(m, stepDur*0.85, 'square', 0.10);
+      const b = this.bgmBass[step];
+      if(b) this.tone(b, stepDur*1.9, 'triangle', 0.16);
+      if(step%2===0) this.hat();
+      if(step%8===0) this.kick();
+      if(step%8===4) this.snare();
+      if(step===30 && Math.random()<0.4) this.spring();
+      if(step===15 && Math.random()<0.15) this.fart();
+      this.bgmStep++;
+    };
+    scheduleStep();
+    this.bgmTimer = setInterval(scheduleStep, stepDur*1000);
+  },
+  stopBGM(){
+    this.bgmPlaying = false;
+    if(this.bgmTimer){ clearInterval(this.bgmTimer); this.bgmTimer=null; }
+  },
+  toggleBGM(){
+    if(this.bgmPlaying){ this.stopBGM(); return false; }
+    else { this.startBGM(); return true; }
   }
 };
 
@@ -275,7 +320,7 @@ function showWebGLError(){
   }
   const msg = document.createElement('div');
   msg.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:30px;z-index:90;';
-  msg.innerHTML = '<div style="font-size:60px;">🎃</div><div style="font-size:20px;margin:16px 0;font-weight:bold;">需要 WebGL 支持</div><div style="font-size:14px;color:#aaa;max-width:300px;line-height:1.6;">你的浏览器不支持 WebGL 3D 渲染。<br>请使用最新版 Chrome / Edge / Safari / Firefox 打开本游戏。</div>';
+  msg.innerHTML = '<div style="font-size:60px;">🎃</div><div style="font-size:20px;margin:16px 0;font-weight:bold;">WebGL Required</div><div style="font-size:14px;color:#aaa;max-width:300px;line-height:1.6;">Your browser doesn\'t support WebGL 3D rendering.<br>Please use the latest Chrome / Edge / Safari / Firefox.</div>';
   document.getElementById('stage').appendChild(msg);
 }
 function initThree(){
@@ -291,11 +336,11 @@ function initThree(){
   try{
     scene = new THREE.Scene();
     scene.background = new THREE.Color(COLORS.bg);
-    scene.fog = new THREE.Fog(COLORS.fog, 8, 22);
+    scene.fog = new THREE.Fog(COLORS.fog, 12, 30);
 
-    camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.set(0, 1.5, 7);
-    camera.lookAt(0,1,0);
+    camera = new THREE.PerspectiveCamera(72, 1, 0.1, 100);
+    camera.position.set(0, 1.2, 11);
+    camera.lookAt(0,0.5,0);
 
     renderer = new THREE.WebGLRenderer({ canvas:document.getElementById('game-canvas'), antialias:true, alpha:false, powerPreference:'high-performance', preserveDrawingBuffer:true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
@@ -353,9 +398,9 @@ const MONSTER_TYPES = [
   'pumpkin_king','stitched_bride','mummy','vampire','sea_witch','dark_witch','witch_mouse','frankenstein'
 ];
 const MONSTER_NAMES = {
-  pumpkin_king:'南瓜头骷髅王', stitched_bride:'缝线新娘', mummy:'绷带木乃伊',
-  vampire:'獠牙伯爵', sea_witch:'海巫乌苏拉', dark_witch:'黑魔女',
-  witch_mouse:'黄皮大眼鼠', frankenstein:'绿皮科学怪人'
+  pumpkin_king:'Pumpkin Skeleton King', stitched_bride:'Stitched Bride', mummy:'Toilet Paper Mummy',
+  vampire:'Fanged Count', sea_witch:'Sea Witch Ursula', dark_witch:'Dark Witch',
+  witch_mouse:'Big-Eye Wizard Mouse', frankenstein:'Green Frankenstein'
 };
 
 function createMonster(type, rng){
@@ -588,13 +633,16 @@ function addOutline(group, thickness){
 // ---------- 舞蹈动作系统 ----------
 const DANCE_MOVES = [
   'twerk','headbang','floss','robot','breakdance','moonwalk','crab','air_guitar',
-  'jump_rope','spiral','ground_roll','limb_tie','head_fly','shimmy','shake','vogue'
+  'jump_rope','spiral','ground_roll','limb_tie','head_fly','shimmy','shake','vogue',
+  'dab','naenae','macarena','chicken','wiggle','gangnam','fortnite','orange_justice'
 ];
 const MOVE_NAMES = {
-  twerk:'电摇', headbang:'甩头', floss:'科目三', robot:'机器人卡点',
-  breakdance:'霹雳舞', moonwalk:'太空步', crab:'螃蟹步', air_guitar:'空气吉他',
-  jump_rope:'无实物跳绳', spiral:'螺旋升天', ground_roll:'跪地打滚',
-  limb_tie:'四肢打结', head_fly:'头飞出去', shimmy:'摇花手', shake:'抽搐', vogue:'社会摇'
+  twerk:'Twerk', headbang:'Headbang', floss:'Floss', robot:'Robot Pop',
+  breakdance:'Breakdance', moonwalk:'Moonwalk', crab:'Crab Walk', air_guitar:'Air Guitar',
+  jump_rope:'Jump Rope', spiral:'Helicopter Spin', ground_roll:'Ground Roll',
+  limb_tie:'Limb Knot', head_fly:'Head Launch', shimmy:'Shimmy', shake:'Seizure', vogue:'Vogue',
+  dab:'DAB!', naenae:'Nae Nae', macarena:'Macarena', chicken:'Chicken Dance',
+  wiggle:'Wiggle Wiggle', gangnam:'Gangnam Style', fortnite:'Default Dance', orange_justice:'Orange Justice'
 };
 
 let currentMove = 'twerk';
@@ -720,6 +768,78 @@ function animateMonster(m, dt, t, beat){
       if(P.armL) P.armL.rotation.z = 1.2 - Math.sin(t*3)*0.3;
       m.rotation.y = Math.sin(t*2)*0.3;
       break;
+    case 'dab':
+      if(P.armL) P.armL.rotation.z = -2.2;
+      if(P.armR) P.armR.rotation.z = 1.0 + Math.sin(t*4)*0.2;
+      if(P.head) P.head.rotation.z = -0.5;
+      m.rotation.y = -0.3;
+      break;
+    case 'naenae':
+      if(P.armR) P.armR.rotation.z = -1.5 + Math.sin(t*5)*0.5;
+      if(P.armL) P.armL.rotation.z = 0.5;
+      if(P.legR) P.legR.rotation.x = Math.sin(t*5)*0.6;
+      m.rotation.z = Math.sin(t*5)*0.1;
+      break;
+    case 'macarena':
+      const mt = (t*2)%4;
+      if(P.armR){ P.armR.rotation.z = mt<1?0.8:mt<2?-0.8:mt<3?0.5:0; P.armR.rotation.x = mt>=2&&mt<3?-1:0; }
+      if(P.armL){ P.armL.rotation.z = mt<1?-0.8:mt<2?0.8:mt<3?-0.5:0; P.armL.rotation.x = mt>=3?-1:0; }
+      if(P.hip) P.hip.rotation.z = Math.sin(t*2)*0.3;
+      break;
+    case 'chicken':
+      if(P.armL) P.armL.rotation.z = 0.8 + Math.sin(t*12)*0.4;
+      if(P.armR) P.armR.rotation.z = -0.8 - Math.sin(t*12)*0.4;
+      if(P.head) P.head.position.y = 1.15 + Math.sin(t*8)*0.08;
+      m.position.y = baseBob + Math.abs(Math.sin(t*8))*0.1;
+      break;
+    case 'wiggle':
+      m.rotation.z = Math.sin(t*12)*0.25;
+      m.position.x = Math.sin(t*6)*0.2;
+      if(P.armL) P.armL.rotation.z = Math.sin(t*12)*1.0;
+      if(P.armR) P.armR.rotation.z = Math.sin(t*12+0.5)*1.0;
+      if(P.legL) P.legL.rotation.x = Math.sin(t*12)*0.3;
+      if(P.legR) P.legR.rotation.x = Math.sin(t*12+Math.PI)*0.3;
+      break;
+    case 'gangnam':
+      if(P.armL) P.armL.rotation.z = -1.5 + Math.sin(t*4)*0.3;
+      if(P.armR) P.armR.rotation.x = Math.sin(t*4)*0.8;
+      if(P.legL) P.legL.rotation.x = Math.sin(t*4)*0.4;
+      m.position.y = baseBob + Math.abs(Math.sin(t*4))*0.15;
+      break;
+    case 'fortnite':
+      const ft = (t*3)%4;
+      if(P.armR) P.armR.rotation.z = ft<2? -0.5 : 0.8;
+      if(P.armL) P.armL.rotation.z = ft<2? 0.5 : -0.8;
+      if(P.legR) P.legR.rotation.x = ft>=2? 0.5 : 0;
+      if(P.legL) P.legL.rotation.x = ft<2? 0.5 : 0;
+      m.rotation.y = ft<2? 0.2 : -0.2;
+      break;
+    case 'orange_justice':
+      if(P.armL) P.armL.rotation.z = Math.sin(t*8)*1.2 + 0.3;
+      if(P.armR) P.armR.rotation.z = Math.sin(t*8+1)*1.2 - 0.3;
+      if(P.legL) P.legL.rotation.x = Math.sin(t*4)*0.3;
+      if(P.legR) P.legR.rotation.x = Math.sin(t*4+Math.PI)*0.3;
+      m.rotation.z = Math.sin(t*8)*0.15;
+      m.position.y = baseBob + Math.abs(Math.sin(t*8))*0.12;
+      break;
+  }
+
+  // ---------- 表情动画（眼睛/嘴巴）----------
+  // 眨眼
+  if(P.eyeL && P.eyeR){
+    const blink = Math.sin(t*0.7) > 0.97 ? 0.1 : 1;
+    P.eyeL.scale.y = blink; P.eyeR.scale.y = blink;
+  }
+  // 瞳孔乱动
+  if(P.pupilL && P.pupilR){
+    const pdx = Math.sin(t*3)*0.03, pdy = Math.cos(t*2.3)*0.02;
+    P.pupilL.position.x = -0.22 + pdx; P.pupilL.position.y = 1.25 + pdy;
+    P.pupilR.position.x = 0.22 + pdx; P.pupilR.position.y = 1.25 + pdy;
+  }
+  // 嘴巴说话节奏
+  if(P.mouth){
+    P.mouth.scale.y = 0.8 + Math.abs(Math.sin(t*bpm*TAU/60*2))*1.2;
+    P.mouth.scale.x = 1 + Math.sin(t*5)*0.1;
   }
 
   // 触手/翅膀等持续动画
@@ -736,7 +856,7 @@ function animateMonster(m, dt, t, beat){
 // 变异效果
 function triggerMutation(m){
   const P = m.userData.parts;
-  const type = pick(['stretch','invert','head_throw','jaw_drop','ghost']);
+  const type = pick(['stretch','invert','head_throw','jaw_drop','ghost','eye_pop','tongue_out','cross_eyes','rainbow','spin_head','big_mouth','tiny_head']);
   switch(type){
     case 'stretch':
       m.userData.stretch = rand(1.3,2.0);
@@ -755,14 +875,52 @@ function triggerMutation(m){
       }
       break;
     case 'jaw_drop':
-      if(P.mouth){ P.mouth.scale.y = 5; setTimeout(()=>{ P.mouth.scale.y=1; }, 500); }
+      if(P.mouth){ P.mouth.scale.y = 8; setTimeout(()=>{ P.mouth.scale.y=1; }, 500); }
       break;
     case 'ghost':
       m.traverse(o=>{ if(o.isMesh && o.material && o.material.opacity!==undefined){ o.material.transparent=true; o.material.opacity=0.4; }});
       setTimeout(()=>{ m.traverse(o=>{ if(o.isMesh && o.material && o.material.opacity!==undefined){ o.material.opacity=1; }}); }, 600);
       break;
+    case 'eye_pop':
+      if(P.eyeL && P.eyeR){
+        P.eyeL.scale.setScalar(2.5); P.eyeR.scale.setScalar(2.5);
+        setTimeout(()=>{ P.eyeL.scale.setScalar(1); P.eyeR.scale.setScalar(1); }, 600);
+      }
+      break;
+    case 'tongue_out':
+      if(P.mouth){
+        P.mouth.scale.set(1.5,3,1);
+        P.mouth.position.y = 0.85;
+        setTimeout(()=>{ P.mouth.scale.set(1,1,1); P.mouth.position.y=0.98; }, 700);
+      }
+      break;
+    case 'cross_eyes':
+      if(P.pupilL && P.pupilR){
+        P.pupilL.position.x = -0.15; P.pupilR.position.x = 0.15;
+        setTimeout(()=>{}, 600);
+      }
+      break;
+    case 'rainbow':
+      m.traverse(o=>{ if(o.isMesh && o.material && o.material.color){ o.material.color.setHSL(Math.random(),1,0.5); } });
+      setTimeout(()=>{ m.traverse(o=>{ if(o.isMesh && o.material && o.material.color){ o.material.color.setHSL(Math.random(),0.6,0.6); } }); }, 500);
+      break;
+    case 'spin_head':
+      if(P.head){ P.head.rotation.y = t2Spin(P.head); }
+      break;
+    case 'big_mouth':
+      if(P.mouth){ P.mouth.scale.setScalar(4); setTimeout(()=>{ P.mouth.scale.setScalar(1); }, 500); }
+      break;
+    case 'tiny_head':
+      if(P.head){ P.head.scale.setScalar(0.4); setTimeout(()=>{ P.head.scale.setScalar(1); }, 600); }
+      break;
   }
-  spawnBarrage(pick(['抽象！','离谱！','蚌埠住了','笑死','上头','鬼畜','逆天','绝绝子']));
+  spawnBarrage(pick(['ABSURD!','WTF?!','I can\'t even','LMAO','VIBES','CHAOS','UNHINGED','ICONIC','Send it','Go off','No way','Slay']));
+}
+function t2Spin(head){
+  let r = 0;
+  const iv = setInterval(()=>{ head.rotation.y = r; r += 0.5; }, 30);
+  setTimeout(()=>{ clearInterval(iv); head.rotation.y = 0; }, 600);
+  return 0;
 }
 
 // ---------- 克隆/分身 ----------
@@ -807,10 +965,10 @@ function triggerFrenzy(){
   if(frenzyActive) return;
   frenzyActive = true;
   document.getElementById('stage').classList.add('fisheye');
-  showBigMeme('暗黑暴走！');
+  showBigMeme('DARK FRENZY!');
   AudioEngine.boom(); AudioEngine.scream();
-  spawnBarrage('💀 暗黑暴走 💀');
-  for(let i=0;i<30;i++) setTimeout(()=>spawnBarrage(pick(['抽象拉满','今天你摇了吗','不评分不通关只发疯','鬼畜传播','越怪越出片','离谱','蚌埠住了','逆天','笑死','上头'])), i*100);
+  spawnBarrage('💀 DARK FRENZY 💀');
+  for(let i=0;i<30;i++) setTimeout(()=>spawnBarrage(pick(['MAX ABSURDITY','Did you shake today?','No scores no levels just vibes','Meme overload','Weirdcore','ABSURD','WTF','LMAO','ICONIC','VIBES'])), i*100);
   // 场景变墓地
   scene.background = new THREE.Color(0x1a0510);
   scene.fog.color.set(0x2a0a1a);
@@ -841,7 +999,7 @@ function triggerFrenzy(){
 }
 
 // ---------- 弹幕与大字梗 ----------
-const BARRAGE_MSGS = ['抽象！','离谱','蚌埠住了','笑死','上头','鬼畜','逆天','绝绝子','今天你摇了吗','不评分不通关只发疯','666','awsl','yyds','太魔性了','停不下来'];
+const BARRAGE_MSGS = ['ABSURD!','WTF?!','I can\'t even','LMAO','VIBES','CHAOS','UNHINGED','ICONIC','Send it','Go off','No way','Slay','Did you shake today?','No scores no levels just vibes','666','OMG','LOL','So meme','Can\'t stop','Send help'];
 function spawnBarrage(text){
   const el = document.createElement('div');
   el.className = 'barrage-item';
@@ -868,11 +1026,11 @@ let cameraShake = 0;
 function applyShake(){
   if(cameraShake>0.01){
     camera.position.x = rand(-cameraShake,cameraShake);
-    camera.position.y = 1.5 + rand(-cameraShake,cameraShake)*0.5;
+    camera.position.y = 1.2 + rand(-cameraShake,cameraShake)*0.5;
     cameraShake *= 0.9;
   } else {
     camera.position.x = lerp(camera.position.x, 0, 0.1);
-    camera.position.y = lerp(camera.position.y, 1.5, 0.1);
+    camera.position.y = lerp(camera.position.y, 1.2, 0.1);
   }
 }
 
@@ -902,7 +1060,7 @@ function handleSwipe(dx,dy){
   addAbstract(6);
   AudioEngine.whoosh();
   cameraShake = 0.2;
-  spawnBarrage(pick(['太空步','螃蟹步','螺旋升天','滑行']));
+  spawnBarrage(pick(['Moonwalk!','Crab walk!','Helicopter!','Slide!']));
 }
 function handleLongPress(){
   setMove(pick(['twerk','vogue','shimmy']));
@@ -912,7 +1070,7 @@ function handleLongPress(){
   }
   addAbstract(8);
   AudioEngine.rewind();
-  spawnBarrage(pick(['拉长了','下腰','章鱼乱舞','弹簧']));
+  spawnBarrage(pick(['Stretch!','Backbend!','Tentacle chaos!','Boing!']));
 }
 function handleDoubleFinger(){
   setMove('limb_tie');
@@ -920,15 +1078,15 @@ function handleDoubleFinger(){
   spawnClone();
   addAbstract(12);
   AudioEngine.zap();
-  spawnBarrage(pick(['分身','克隆','合体','满屏都是']));
-  showBigMeme('分身术！');
+  spawnBarrage(pick(['CLONE!','FUSION!','It\'s everywhere!','Multiply!']));
+  showBigMeme('CLONE JUTSU!');
 }
 function handleMultiTap(){
   setMove('shake');
   AudioEngine.bpm = Math.min(180, AudioEngine.bpm+5);
   addAbstract(10);
   cameraShake = 0.5;
-  spawnBarrage(pick(['鬼畜暴走','抽搐加速','根本停不下来','冲冲冲']));
+  spawnBarrage(pick(['CHAOS MODE!','Speed up!','Can\'t stop!','GOGOGO!']));
 }
 function handleShake(){
   triggerFrenzy();
@@ -992,6 +1150,7 @@ window.addEventListener('keydown', e=>{
     case 'ArrowDown': handleSwipe(0,100); break;
     case 'ArrowUp': handleLongPress(); break;
     case 'KeyM': toggleMute(); break;
+    case 'KeyB': toggleBGM(); break;
     case 'KeyF': triggerFrenzy(); break;
     case 'KeyC': changeCharacter(); break;
   }
@@ -1017,8 +1176,15 @@ function toggleMute(){
   muted = !muted;
   AudioEngine.setMuted(muted);
   document.getElementById('btn-mute').textContent = muted?'🔊':'🔇';
+  if(muted) AudioEngine.stopBGM();
+}
+function toggleBGM(){
+  const playing = AudioEngine.toggleBGM();
+  document.getElementById('btn-bgm').textContent = playing?'🎶':'🎵';
+  if(playing) AudioEngine.resume();
 }
 document.getElementById('btn-mute').addEventListener('click', toggleMute);
+document.getElementById('btn-bgm').addEventListener('click', toggleBGM);
 document.getElementById('btn-frenzy').addEventListener('click', ()=>{ triggerFrenzy(); });
 document.getElementById('btn-share').addEventListener('click', openShare);
 document.getElementById('btn-change').addEventListener('click', changeCharacter);
@@ -1038,7 +1204,7 @@ function changeCharacter(){
   stageGroup.add(monster);
   showBigMeme(MONSTER_NAMES[currentType]);
   AudioEngine.whoosh();
-  spawnBarrage('换人：'+MONSTER_NAMES[currentType]);
+  spawnBarrage('Swap: '+MONSTER_NAMES[currentType]);
   addAbstract(3);
 }
 
@@ -1050,10 +1216,10 @@ function toggleRecord(){
   if(recording){
     recordStart = Date.now();
     ind.style.display = 'flex';
-    showBigMeme('开始录制');
+    showBigMeme('REC START');
   } else {
     ind.style.display = 'none';
-    showBigMeme('录制完成！');
+    showBigMeme('REC DONE!');
     setTimeout(openShare, 600);
   }
 }
@@ -1066,22 +1232,22 @@ function openShare(){
 function copyCode(){
   const code = window._challengeCode || document.getElementById('share-code').textContent;
   const ta = document.createElement('textarea');
-  ta.value = '《怪物大乱摇》挑战码：'+code+'\n来和我跳同款抽象舞吧！';
+  ta.value = 'Monster Meme Ball challenge code: '+code+'\nDance the same absurd routine with me!';
   document.body.appendChild(ta); ta.select();
-  try{ document.execCommand('copy'); showBigMeme('已复制！'); }catch(e){ showBigMeme('复制失败'); }
+  try{ document.execCommand('copy'); showBigMeme('COPIED!'); }catch(e){ showBigMeme('Copy failed'); }
   document.body.removeChild(ta);
 }
 function genGif(){
-  // 简化版：截图并显示
-  showBigMeme('生成表情包...');
+  // 简化版：截图并下载
+  showBigMeme('Saving snapshot...');
   renderer.render(scene,camera);
   try{
     const url = renderer.domElement.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = url; a.download = 'monster_dance_'+Date.now()+'.png';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    showBigMeme('已保存！');
-  }catch(e){ showBigMeme('截图失败'); }
+    showBigMeme('SAVED!');
+  }catch(e){ showBigMeme('Snapshot failed'); }
 }
 
 // ---------- 自动挂机 ----------
@@ -1152,9 +1318,11 @@ function startGame(){
   changeCharacter();
   startIdleAuto();
   animate();
+  // 自动开启背景音乐
+  setTimeout(()=>{ AudioEngine.startBGM(); document.getElementById('btn-bgm').textContent='🎶'; }, 300);
   // 开场欢迎
-  setTimeout(()=>{ showBigMeme('今天你摇了吗？'); }, 500);
-  setTimeout(()=>{ spawnBarrage('不评分不通关只发疯'); }, 1000);
+  setTimeout(()=>{ showBigMeme('Did you shake today?'); }, 500);
+  setTimeout(()=>{ spawnBarrage('No scores no levels just vibes'); }, 1000);
 }
 
 // 暴露到全局便于调试

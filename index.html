@@ -304,11 +304,11 @@ const AudioEngine = {
 
 // ---------- Three.js 场景 ----------
 let scene, camera, renderer, clock;
-let stageGroup, monster, ground;
+let stageGroup, monster, ground, snow;
 let monsters=[]; // 克隆体
 const COLORS = {
-  bg:0x0a0210,
-  fog:0x0a0210
+  bg:0x0e3b2a,      // 圣诞深绿
+  fog:0x0e3b2a
 };
 
 let webglAvailable = true;
@@ -363,11 +363,25 @@ function initThree(){
   // 舞台
   stageGroup = new THREE.Group(); scene.add(stageGroup);
 
-  // 地面：干净的纯色平面（舞台地板）
+  // 地面：雪白平面（圣诞雪地）
   const floorGeo = new THREE.PlaneGeometry(30,30);
-  const floorMat = new THREE.MeshStandardMaterial({ color:0xd8d2e8, roughness:0.9, metalness:0.0, flatShading:true });
+  const floorMat = new THREE.MeshStandardMaterial({ color:0xf5f5f0, roughness:0.95, metalness:0.0, flatShading:true });
   ground = new THREE.Mesh(floorGeo, floorMat);
   ground.rotation.x = -Math.PI/2; ground.position.y=-1.2; ground.receiveShadow=true; stageGroup.add(ground);
+
+  // 飘雪（轻柔）
+  const snowCount = 200;
+  const snowGeo = new THREE.BufferGeometry();
+  const snowPos = new Float32Array(snowCount*3);
+  for(let i=0;i<snowCount;i++){
+    snowPos[i*3] = rand(-10,10);
+    snowPos[i*3+1] = rand(-1.2, 6);
+    snowPos[i*3+2] = rand(-8,8);
+  }
+  snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos,3));
+  const snowMat = new THREE.PointsMaterial({ color:0xffffff, size:0.08, transparent:true, opacity:0.85, depthWrite:false });
+  snow = new THREE.Points(snowGeo, snowMat);
+  stageGroup.add(snow);
 
   clock = new THREE.Clock();
   resize();
@@ -1078,7 +1092,7 @@ function triggerFrenzy(){
   // 场景变墓地
   scene.background = new THREE.Color(0x1a0510);
   scene.fog.color.set(0x2a0a1a);
-  ground.material.color.set(0x3a1a2a);
+  ground.material.color.set(0x8a5a5a);
   // 生成墓碑
   for(let i=0;i<8;i++){
     const tomb = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.8,0.15), new THREE.MeshStandardMaterial({color:0x666666}));
@@ -1100,7 +1114,7 @@ function triggerFrenzy(){
     document.getElementById('stage').classList.remove('fisheye');
     scene.background = new THREE.Color(COLORS.bg);
     scene.fog.color.set(COLORS.fog);
-    ground.material.color.set(0xd8d2e8);
+    ground.material.color.set(0xf5f5f0);
   }, 15000);
 }
 
@@ -1388,6 +1402,16 @@ function animate(){
   if(beatTimer >= beatDur){
     beatTimer -= beatDur;
     AudioEngine.playBeat();
+  }
+
+  // 飘雪下落
+  if(snow){
+    const pos = snow.geometry.attributes.position.array;
+    for(let i=0;i<pos.length;i+=3){
+      pos[i+1] -= dt*0.8;
+      if(pos[i+1] < -1.2){ pos[i+1] = 6; pos[i] = rand(-10,10); pos[i+2] = rand(-8,8); }
+    }
+    snow.geometry.attributes.position.needsUpdate = true;
   }
 
   // 动作切换

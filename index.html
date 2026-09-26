@@ -574,12 +574,94 @@ const CharDraw = {
 };
 
 // ========== 舞蹈动作 ==========
-const MOVES = ['idle', 'twitch', 'wiggle', 'spin', 'bounce', 'shake', 'flip', 'wobble', 'stretch', 'spaz'];
+const MOVES = ['idle', 'twitch', 'wiggle', 'spin', 'bounce', 'shake', 'flip', 'wobble', 'stretch', 'spaz', 'jelly', 'breakdance', 'headspin', 'inflate', 'dab'];
 let currentMove = 'idle';
 let moveTime = 0, moveDuration = 2;
 
-function setMove(m) { currentMove = m; moveTime = 0; moveDuration = rand(1.5, 3.5); }
+function setMove(m) { currentMove = m; moveTime = 0; moveDuration = rand(0.8, 2.2); }
 function randomMove() { setMove(pick(MOVES)); }
+
+// ========== 混乱系统：随机魔性事件 ==========
+const CHAOS_EVENTS = [
+  'glitch', 'rainbow', 'shake_screen', 'flash', 'clone_burst', 'emoji_burst',
+  'color_invert', 'warp', 'teleport', 'face_swap', 'rain_money', 'ghost_army',
+];
+let chaosTimer = 0;
+let screenShake = 0, screenShakeX = 0, screenShakeY = 0;
+let glitchAmount = 0;
+let rainbowAmount = 0;
+let flashAmount = 0;
+let invertAmount = 0;
+let warpAmount = 0;
+
+function triggerChaos() {
+  const event = pick(CHAOS_EVENTS);
+  switch (event) {
+    case 'glitch':
+      glitchAmount = 1;
+      showBigMeme(pick(['⚠️ GLITCH ⚠️', '系统错误', '00000', '???']));
+      break;
+    case 'rainbow':
+      rainbowAmount = 3;
+      showBigMeme('🌈 彩虹暴走！');
+      break;
+    case 'shake_screen':
+      screenShake = 1;
+      showBigMeme('震 动！');
+      break;
+    case 'flash':
+      flashAmount = 1;
+      showBigMeme('闪 ！');
+      break;
+    case 'clone_burst':
+      for (let i = 0; i < 5; i++) spawnParticles(character.x + rand(-50, 50), character.y + rand(-50, 50), 3, pick(['#ff6600', '#c8a030', '#3a8c3a', '#ff0000', '#00ffff']));
+      showBigMeme('分身术！');
+      spawnBarrage('影分身之术');
+      break;
+    case 'emoji_burst':
+      for (let i = 0; i < 8; i++) spawnBarrage(pick(['🎃', '👻', '🦇', '💀', '🕷️', '🧙', '🦴', '🍬']));
+      showBigMeme('Emoji 暴 风！');
+      break;
+    case 'color_invert':
+      invertAmount = 1;
+      showBigMeme('反 转！');
+      break;
+    case 'warp':
+      warpAmount = 2;
+      showBigMeme('扭 曲！');
+      break;
+    case 'teleport':
+      character.x = rand(100, W - 100);
+      character.y = rand(100, H - 200);
+      spawnParticles(character.x, character.y, 20);
+      showBigMeme('瞬 移！');
+      break;
+    case 'face_swap':
+      const oldIdx = currentCharIdx;
+      do { currentCharIdx = randi(0, CHARACTERS.length - 1); } while (currentCharIdx === oldIdx);
+      character.type = CHARACTERS[currentCharIdx].id;
+      character.name = CHARACTERS[currentCharIdx].name;
+      spawnParticles(character.x, character.y, 25);
+      showBigMeme('变脸！');
+      AudioEngine.ghostWhisper();
+      break;
+    case 'rain_money':
+      for (let i = 0; i < 20; i++) {
+        spawnParticles(rand(0, W), -20, 1, '#c8a030');
+      }
+      showBigMeme('下 钱 了！');
+      spawnBarrage('💰💰💰');
+      break;
+    case 'ghost_army':
+      for (let i = 0; i < 10; i++) {
+        spawnParticles(rand(50, W - 50), rand(50, H - 100), 2, 'rgba(255,255,255,0.6)');
+      }
+      showBigMeme('👻 幽灵大军！');
+      spawnBarrage('Booooo!');
+      break;
+  }
+  AudioEngine.twitch();
+}
 
 // ========== 角色 ==========
 let character = null;
@@ -596,6 +678,7 @@ function createCharacter() {
     targetScaleX: 1, targetScaleY: 1,
     // 表情
     pupilX: 0, pupilY: 0,
+    pupilSize: 1,
     mouthOpen: 0,
     tongue: 0,
     browAngle: 0,
@@ -608,6 +691,15 @@ function createCharacter() {
     flipping: false, flipProgress: 0,
     // 残影
     afterimages: [],
+    // 魔性属性
+    hueShift: 0,
+    elasticPhase: 0,
+    inflation: 0,
+    wobbleOffset: { x: 0, y: 0 },
+    glitchOffset: { x: 0, y: 0 },
+    eyePop: 0,
+    spinningHead: false,
+    headSpinAngle: 0,
   };
 }
 
@@ -680,6 +772,9 @@ const BARRAGE_MSGS = [
   '不给糖就捣蛋！', 'Trick or Treat!', '今晚发疯到天亮', '万圣节快乐', 'Booo!👻',
   '舞王降临', '魔性全开', '跳到散！', 'Monster Mash!', 'Happy Halloween',
   '南瓜灯亮了', '幽灵伴舞', '魔法爆炸', '万圣狂欢夜', 'Spooky Scary',
+  '我裂开了', '啊啊啊啊啊', '骨头散架', '头掉了', '好长啊',
+  '谁在挠我', '停止思考', '抽搐警告', '鬼畜模式', '???',
+  'skr~', '芜湖起飞', '就这？', '不会吧', '好家伙',
 ];
 
 function spawnParticles(x, y, count, color) {
@@ -726,14 +821,22 @@ function addMadness(v) {
 // ========== 暴走 ==========
 let frenzyActive = false, frenzyTimer = 0;
 function triggerFrenzy() {
-  frenzyActive = true; frenzyTimer = 8;
+  frenzyActive = true; frenzyTimer = 12;
   AudioEngine.explosion();
-  spawnParticles(character.x, character.y, 50, '#ff6600');
+  spawnParticles(character.x, character.y, 60, '#ff6600');
   showBigMeme('💥 暴 走 ！');
   spawnBarrage('不给糖就捣蛋！');
-  addMadness(20);
-  document.body.style.filter = 'invert(1) hue-rotate(180deg)';
-  setTimeout(() => { document.body.style.filter = ''; }, 200);
+  spawnBarrage('啊啊啊啊啊');
+  addMadness(30);
+  rainbowAmount = 3;
+  screenShake = 1;
+  flashAmount = 1;
+  glitchAmount = 1;
+  // 连续触发混乱
+  setTimeout(() => triggerChaos(), 500);
+  setTimeout(() => triggerChaos(), 1500);
+  setTimeout(() => triggerChaos(), 3000);
+  setTimeout(() => triggerChaos(), 5000);
 }
 
 // ========== 交互处理 ==========
@@ -747,51 +850,62 @@ function getCharPos() { return { x: character.x, y: character.y }; }
 function handleTap() {
   AudioEngine.twitch();
   setMove('twitch');
-  character.twitchTimer = 0.3;
-  character.scaleY = 0.7; character.scaleX = 1.3;
-  spawnParticles(character.x, character.y + 30, 5);
-  addMadness(3);
+  character.twitchTimer = 0.4;
+  character.scaleY = 0.6; character.scaleX = 1.5;
+  character.eyePop = 1.2;
+  spawnParticles(character.x, character.y + 30, 8);
+  addMadness(4);
   if (Math.random() < 0.3) spawnBarrage(pick(BARRAGE_MSGS));
+  if (Math.random() < 0.2) triggerChaos();
 }
 
 function handleSwipe(dx, dy) {
   AudioEngine.ghostWhisper();
   const angle = Math.atan2(dy, dx);
-  character.vx = Math.cos(angle) * 300;
-  character.vy = Math.sin(angle) * 300;
-  character.rotV = (dx > 0 ? 1 : -1) * 5;
+  character.vx = Math.cos(angle) * 500;
+  character.vy = Math.sin(angle) * 500;
+  character.rotV = (dx > 0 ? 1 : -1) * 8;
   setMove('spin');
-  spawnParticles(character.x, character.y, 10);
-  addMadness(5);
+  spawnParticles(character.x, character.y, 15);
+  addMadness(6);
+  if (Math.random() < 0.3) { screenShake = 0.5; }
+  if (Math.random() < 0.15) triggerChaos();
 }
 
 function handleLongPress() {
   AudioEngine.pumpkinPop();
   setMove('stretch');
-  character.targetScaleY = 2; character.targetScaleX = 0.5;
-  character.tongue = 1;
-  spawnParticles(character.x, character.y, 15, '#ff3366');
-  addMadness(8);
+  character.targetScaleY = 2.5; character.targetScaleX = 0.4;
+  character.tongue = 1.5;
+  character.eyePop = 1;
+  spawnParticles(character.x, character.y, 20, '#ff3366');
+  addMadness(10);
   showBigMeme('拉～长～');
+  if (Math.random() < 0.3) triggerChaos();
 }
 
 function handleDoubleFinger() {
   AudioEngine.explosion();
   setMove('flip');
   character.flipping = true; character.flipProgress = 0;
-  spawnParticles(character.x, character.y, 30);
-  addMadness(15);
+  spawnParticles(character.x, character.y, 40);
+  addMadness(18);
   showBigMeme('翻 转！');
+  screenShake = 0.8;
+  flashAmount = 0.5;
+  if (Math.random() < 0.4) triggerChaos();
 }
 
 function handleMultiTap() {
   AudioEngine.boneKnock();
   setMove('spaz');
-  character.shakeX = 20; character.shakeY = 20;
-  spawnParticles(character.x, character.y, 20);
-  addMadness(12);
+  character.shakeX = 25; character.shakeY = 25;
+  character.eyePop = 2;
+  spawnParticles(character.x, character.y, 30);
+  addMadness(15);
   showBigMeme('疯狂抽搐！');
   spawnBarrage('魔性全开');
+  triggerChaos();
 }
 
 function handleShake() {
@@ -945,10 +1059,17 @@ function startIdleAuto() {
   if (idleTimer) clearInterval(idleTimer);
   idleTimer = setInterval(() => {
     if (document.hidden) return;
-    if (Math.random() < 0.7) { randomMove(); spawnBarrage(pick(BARRAGE_MSGS)); addMadness(2); }
-    if (Math.random() < 0.2) { handleTap(); }
-    if (Math.random() < 0.1) { spawnParticles(rand(0, W), rand(0, H), 8); }
-  }, 2500);
+    // 自动换动作（更频繁）
+    if (Math.random() < 0.8) { randomMove(); addMadness(2); }
+    // 弹幕
+    if (Math.random() < 0.5) spawnBarrage(pick(BARRAGE_MSGS));
+    // 自动触发混乱事件
+    if (Math.random() < 0.3) triggerChaos();
+    // 自动触发小抽搐
+    if (Math.random() < 0.25) { handleTap(); }
+    // 随机粒子
+    if (Math.random() < 0.3) { spawnParticles(rand(0, W), rand(0, H), 8); }
+  }, 1500);
 }
 
 // ========== 主循环 ==========
@@ -1118,105 +1239,174 @@ function drawCharacter(dt, t) {
   const squash = 1 - beatPunch * 0.15;
   const stretch = 1 + beatPunch * 0.15;
 
-  // 动作动画
+  // 动作动画 —— 全部大幅加强
   moveTime += dt;
   if (moveTime >= moveDuration) randomMove();
 
   let extraRot = 0, extraX = 0, extraY = 0;
   let sX = character.scaleX * stretch, sY = character.scaleY * squash;
+  let drawHue = 0;
 
   switch (currentMove) {
     case 'twitch':
       character.twitchTimer -= dt;
       if (character.twitchTimer > 0) {
-        extraX = rand(-5, 5); extraRot = rand(-0.1, 0.1);
-        sX *= rand(0.9, 1.1); sY *= rand(0.9, 1.1);
-      }
+        extraX = rand(-20, 20); extraY = rand(-15, 15); extraRot = rand(-0.4, 0.4);
+        sX *= rand(0.7, 1.4); sY *= rand(0.7, 1.4);
+        character.eyePop = rand(0.5, 1.5);
+      } else { character.eyePop = 0; }
       break;
     case 'wiggle':
-      extraRot = Math.sin(t * 8) * 0.3;
-      sX *= 1 + Math.sin(t * 6) * 0.1;
+      extraRot = Math.sin(t * 10) * 0.6;
+      sX *= 1 + Math.sin(t * 8) * 0.25;
+      sY *= 1 - Math.sin(t * 8) * 0.15;
       break;
     case 'spin':
-      extraRot = t * 5;
+      extraRot = t * 12;
+      sX *= 1 + Math.abs(Math.sin(t * 6)) * 0.2;
       break;
     case 'bounce':
-      extraY = Math.abs(Math.sin(t * beatFreq)) * -30;
-      sY *= 1 + Math.sin(t * beatFreq) * 0.1;
+      extraY = Math.abs(Math.sin(t * beatFreq * 2)) * -50;
+      sY *= 1 + Math.sin(t * beatFreq * 2) * 0.25;
+      sX *= 1 - Math.sin(t * beatFreq * 2) * 0.15;
+      if (Math.sin(t * beatFreq * 2) > 0.95) character.eyePop = 0.8;
       break;
     case 'shake':
-      extraX = Math.sin(t * 20) * 8;
-      extraRot = Math.sin(t * 15) * 0.15;
+      extraX = Math.sin(t * 30) * 20;
+      extraY = Math.cos(t * 25) * 10;
+      extraRot = Math.sin(t * 20) * 0.4;
+      sX *= 1 + Math.sin(t * 15) * 0.15;
       break;
     case 'flip':
       character.flipping = true;
-      character.flipProgress += dt * 3;
+      character.flipProgress += dt * 4;
       if (character.flipProgress >= 1) { character.flipping = false; setMove('bounce'); }
       extraRot = character.flipProgress * Math.PI * 2;
+      extraY = Math.sin(character.flipProgress * Math.PI) * -60;
       break;
     case 'wobble':
-      sX *= 1 + Math.sin(t * 4) * 0.2;
-      sY *= 1 - Math.sin(t * 4) * 0.2;
-      extraRot = Math.sin(t * 3) * 0.2;
+      sX *= 1 + Math.sin(t * 6) * 0.4;
+      sY *= 1 - Math.sin(t * 6) * 0.3;
+      extraRot = Math.sin(t * 4) * 0.4;
+      extraX = Math.sin(t * 5) * 15;
       break;
     case 'stretch':
-      sY *= 1.5; sX *= 0.7;
-      character.tongue = Math.min(1, character.tongue + dt);
+      sY *= 1 + Math.sin(t * 3) * 0.8 + 0.5;
+      sX *= 0.6;
+      character.tongue = Math.min(1.5, character.tongue + dt * 2);
       break;
     case 'spaz':
-      extraX = rand(-10, 10); extraY = rand(-10, 10);
-      extraRot = rand(-0.3, 0.3);
-      sX *= rand(0.8, 1.2); sY *= rand(0.8, 1.2);
+      extraX = rand(-30, 30); extraY = rand(-25, 25);
+      extraRot = rand(-0.8, 0.8);
+      sX *= rand(0.5, 1.8); sY *= rand(0.5, 1.8);
+      character.eyePop = rand(0, 2);
+      character.pupilX = rand(-15, 15); character.pupilY = rand(-15, 15);
+      break;
+    case 'jelly':
+      sX *= 1 + Math.sin(t * 7) * 0.35;
+      sY *= 1 - Math.sin(t * 7) * 0.3;
+      extraRot = Math.sin(t * 3) * 0.2;
+      character.elasticPhase = t;
+      break;
+    case 'breakdance':
+      extraRot = t * 8 + Math.sin(t * 4) * 0.5;
+      extraX = Math.sin(t * 5) * 30;
+      extraY = Math.abs(Math.cos(t * 5)) * -20;
+      sX *= 1 + Math.sin(t * 10) * 0.2;
+      break;
+    case 'headspin':
+      character.spinningHead = true;
+      character.headSpinAngle = t * 15;
+      extraY = -10;
+      sX *= 0.9; sY *= 0.9;
+      break;
+    case 'inflate':
+      character.inflation = (Math.sin(t * 4) + 1) * 0.5;
+      sX *= 1 + character.inflation * 1.5;
+      sY *= 1 + character.inflation * 1.5;
+      if (character.inflation > 0.8) character.eyePop = 1;
+      break;
+    case 'dab':
+      extraRot = -0.3 + Math.sin(t * 8) * 0.1;
+      extraX = 20;
+      sX *= 1.1; sY *= 1.1;
       break;
     case 'idle':
     default:
-      extraY = Math.sin(t * 2) * 3;
-      extraRot = Math.sin(t * 1.5) * 0.05;
+      // idle 也要魔性：不停小幅度乱动
+      extraY = Math.sin(t * 4) * 8 + Math.sin(t * 7) * 4;
+      extraX = Math.sin(t * 3) * 5;
+      extraRot = Math.sin(t * 2.5) * 0.15;
+      sX *= 1 + Math.sin(t * 6) * 0.08;
+      sY *= 1 - Math.sin(t * 6) * 0.05;
       break;
   }
 
+  if (!['stretch', 'headspin'].includes(currentMove)) {
+    character.spinningHead = false;
+  }
   if (!['stretch'].includes(currentMove)) {
-    character.tongue = Math.max(0, character.tongue - dt * 2);
+    character.tongue = Math.max(0, character.tongue - dt * 1.5);
   }
+  character.eyePop = Math.max(0, character.eyePop - dt * 3);
 
-  // 表情
-  character.pupilX = Math.sin(t * 3) * 5 + Math.sin(t * 7) * 3;
-  character.pupilY = Math.cos(t * 2) * 4 + Math.sin(t * 5) * 2;
+  // 表情 —— 更疯狂
+  character.pupilX = Math.sin(t * 5) * 8 + Math.sin(t * 11) * 5 + (frenzyActive ? rand(-5, 5) : 0);
+  character.pupilY = Math.cos(t * 3) * 6 + Math.sin(t * 8) * 4 + (frenzyActive ? rand(-5, 5) : 0);
   character.mouthOpen = (Math.sin(t * beatFreq * 2) + 1) * 0.5;
+  character.browAngle = Math.sin(t * 6) * 0.3;
 
-  // 暴走模式
+  // 彩虹色
+  if (rainbowAmount > 0) { drawHue = (t * 360 * 3) % 360; }
+
+  // 暴走模式 —— 更加疯狂
   if (frenzyActive) {
-    extraX += rand(-8, 8); extraY += rand(-8, 8);
-    extraRot += rand(-0.2, 0.2);
-    sX *= rand(0.9, 1.1); sY *= rand(0.9, 1.1);
-    character.pupilX = rand(-10, 10); character.pupilY = rand(-10, 10);
+    extraX += rand(-15, 15); extraY += rand(-15, 15);
+    extraRot += rand(-0.4, 0.4);
+    sX *= rand(0.7, 1.4); sY *= rand(0.7, 1.4);
+    character.pupilX = rand(-15, 15); character.pupilY = rand(-15, 15);
     character.mouthOpen = 1;
-    character.tongue = 1;
+    character.tongue = 1.2;
+    character.eyePop = 1.5;
+    drawHue = (t * 720) % 360;
   }
 
-  // 残影
-  if (['spin', 'spaz', 'flip'].includes(currentMove) || frenzyActive) {
-    character.afterimages.push({ x: character.x + extraX, y: character.y + extraY, rot: character.rot + extraRot, life: 0.3 });
+  // glitch 偏移
+  if (glitchAmount > 0.01) {
+    character.glitchOffset.x = rand(-10, 10) * glitchAmount;
+    character.glitchOffset.y = rand(-5, 5) * glitchAmount;
+    extraX += character.glitchOffset.x;
+  }
+
+  // 残影 —— 更密更久
+  if (['spin', 'spaz', 'flip', 'breakdance', 'jelly'].includes(currentMove) || frenzyActive || rainbowAmount > 0.5) {
+    character.afterimages.push({ x: character.x + extraX, y: character.y + extraY, rot: character.rot + extraRot, life: 0.4, hue: drawHue, sX, sY });
   }
   character.afterimages = character.afterimages.filter(a => { a.life -= dt; return a.life > 0; });
+  // 残影最多保留15个
+  if (character.afterimages.length > 15) character.afterimages.shift();
   for (const a of character.afterimages) {
     ctx.save();
-    ctx.globalAlpha = a.life * 0.3;
+    ctx.globalAlpha = a.life * 0.4;
+    if (a.hue) ctx.filter = `hue-rotate(${a.hue}deg)`;
     ctx.translate(a.x, a.y); ctx.rotate(a.rot);
-    ctx.scale(sX, sY);
+    ctx.scale(a.sX, a.sY);
     const drawFn = CharDraw[character.type];
     if (drawFn) drawFn(ctx, t, character);
     ctx.restore();
   }
+  ctx.filter = 'none';
 
-  // 画角色
+  // 画角色 —— 带 hue-rotate 和 glitch
   ctx.save();
+  if (drawHue) ctx.filter = `hue-rotate(${drawHue}deg)`;
   ctx.translate(character.x + extraX, character.y + extraY);
   ctx.rotate(character.rot + extraRot);
   ctx.scale(sX, sY);
   const drawFn = CharDraw[character.type];
   if (drawFn) drawFn(ctx, t, character);
   ctx.restore();
+  ctx.filter = 'none';
 }
 
 function drawParticles(dt) {
@@ -1247,11 +1437,66 @@ function animate(ts) {
   if (beatTimer >= beatDur) {
     beatTimer -= beatDur;
     AudioEngine.beat();
+    // 每拍随机小概率触发混乱事件
+    if (Math.random() < 0.12) triggerChaos();
   }
+
+  // 混乱事件自动触发（每隔几秒随机来一次）
+  chaosTimer += dt;
+  if (chaosTimer > 5 && Math.random() < 0.02) {
+    triggerChaos();
+    chaosTimer = 0;
+  }
+
+  // 屏幕特效衰减
+  screenShake = Math.max(0, screenShake - dt * 3);
+  glitchAmount = Math.max(0, glitchAmount - dt * 2);
+  rainbowAmount = Math.max(0, rainbowAmount - dt);
+  flashAmount = Math.max(0, flashAmount - dt * 3);
+  invertAmount = Math.max(0, invertAmount - dt * 2);
+  warpAmount = Math.max(0, warpAmount - dt);
+
+  // 屏幕震动
+  if (screenShake > 0.01) {
+    screenShakeX = rand(-1, 1) * screenShake * 15;
+    screenShakeY = rand(-1, 1) * screenShake * 15;
+  } else { screenShakeX = 0; screenShakeY = 0; }
+
+  // 应用屏幕变换
+  ctx.save();
+  ctx.translate(screenShakeX, screenShakeY);
+
+  // 颜色反转
+  if (invertAmount > 0.01) { ctx.filter = `invert(${invertAmount})`; }
 
   drawScene(dt, totalTime);
   drawCharacter(dt, totalTime);
   drawParticles(dt);
+
+  ctx.filter = 'none';
+  ctx.restore();
+
+  // 闪光覆盖
+  if (flashAmount > 0.01) {
+    ctx.fillStyle = `rgba(255,255,255,${flashAmount * 0.6})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // glitch 扫描线
+  if (glitchAmount > 0.01) {
+    for (let i = 0; i < 5; i++) {
+      const y = rand(0, H);
+      ctx.fillStyle = `rgba(${rand(200, 255)|0},0,${rand(100, 200)|0},${glitchAmount * 0.3})`;
+      ctx.fillRect(0, y, W, rand(2, 8));
+    }
+    // RGB 分离效果
+    ctx.globalCompositeOperation = 'screen';
+    ctx.fillStyle = `rgba(255,0,0,${glitchAmount * 0.15})`;
+    ctx.fillRect(rand(-5, 5), 0, W, H);
+    ctx.fillStyle = `rgba(0,255,255,${glitchAmount * 0.15})`;
+    ctx.fillRect(rand(-5, 5), 0, W, H);
+    ctx.globalCompositeOperation = 'source-over';
+  }
 
   // 暴走计时
   if (frenzyActive) {

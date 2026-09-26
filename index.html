@@ -5,48 +5,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Monster Meme Ball: Dark Dance Madness</title>
+<title>万圣夜：怪物狂欢曲 Halloween: Monster Mash-Up</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Nosifer&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
-  html, body { width:100%; height:100%; overflow:hidden; background:#000; font-family: "Comic Sans MS", "Trebuchet MS", "Microsoft YaHei", sans-serif; touch-action:none; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#000; font-family: "Cinzel Decorative", "Cinzel", "Georgia", "Microsoft YaHei", serif; touch-action:none; }
   #game-root { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
   #game-canvas { display:block; width:100%; height:100%; touch-action:none; }
   /* 竖屏舞台容器 */
   #stage { position:relative; width:100%; height:100%; overflow:hidden; background:#0a0612; }
-  /* 扫描线 + CRT 覆盖层 */
-  #fx-overlay { position:absolute; inset:0; pointer-events:none; z-index:30; mix-blend-mode:screen; opacity:0.35;
+  /* 扫描线覆盖层（极淡，哥特风） */
+  #fx-overlay { position:absolute; inset:0; pointer-events:none; z-index:30; mix-blend-mode:overlay; opacity:0.08;
     background:repeating-linear-gradient(0deg, rgba(0,0,0,0.5) 0px, rgba(0,0,0,0.5) 1px, transparent 1px, transparent 3px); }
+  /* 雾气覆盖层 */
   #fx-vignette { position:absolute; inset:0; pointer-events:none; z-index:31;
-    box-shadow: inset 0 0 140px 40px rgba(0,0,0,0.85); }
+    box-shadow: inset 0 0 140px 40px rgba(0,0,0,0.9); }
   #fx-glitch { position:absolute; inset:0; pointer-events:none; z-index:29; opacity:0;
-    background:linear-gradient(90deg, rgba(255,0,80,0.15), rgba(0,255,200,0.15)); mix-blend-mode:screen; }
+    background:linear-gradient(90deg, rgba(255,102,0,0.18), rgba(74,111,165,0.18), rgba(200,160,48,0.18)); mix-blend-mode:screen; }
+  /* 飘雾动画 */
+  #fx-mist { position:absolute; inset:0; pointer-events:none; z-index:28; opacity:0.35;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(58,140,58,0.10), transparent 40%),
+      radial-gradient(circle at 80% 30%, rgba(74,111,165,0.10), transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(200,160,48,0.06), transparent 50%);
+    animation: mistdrift 18s ease-in-out infinite alternate; }
+  @keyframes mistdrift { 0%{transform:translate(0,0);} 100%{transform:translate(-3%,2%);} }
   /* 鱼眼 */
   .fisheye #stage { border-radius:24px; }
   /* 弹幕层 */
   #barrage { position:absolute; inset:0; pointer-events:none; z-index:40; overflow:hidden; }
-  .barrage-item { position:absolute; white-space:nowrap; font-weight:900; font-size:22px; color:#fff;
-    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 0 0 12px #ff00aa; animation: bslide linear forwards; }
+  .barrage-item { position:absolute; white-space:nowrap; font-weight:700; font-size:22px; color:#fff;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 0 0 12px #ff6600, 0 0 18px #3a8c3a; animation: bslide linear forwards; }
   @keyframes bslide { from { transform:translateX(110vw);} to { transform:translateX(-110vw);} }
   /* 大字梗 */
   #bigmeme { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     pointer-events:none; z-index:45; opacity:0; }
-  #bigmeme span { font-size:clamp(40px,14vw,120px); font-weight:900; color:#fff;
-    text-shadow: 4px 4px 0 #000, -2px -2px 0 #ff00aa, 0 0 30px #00ffcc; transform:rotate(-8deg); }
+  #bigmeme span { font-family:"Cinzel Decorative","Cinzel","Georgia",serif; font-size:clamp(40px,14vw,120px); font-weight:900; color:#c8a030;
+    text-shadow: 4px 4px 0 #000, -2px -2px 0 #ff6600, 0 0 30px #c8a030, 0 0 50px #ff6600; transform:rotate(-8deg); }
   /* 抽象值条 */
   #meter-wrap { position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:50;
-    width:60%; max-width:300px; height:14px; background:rgba(0,0,0,0.6); border:2px solid #ff00aa;
-    border-radius:10px; overflow:hidden; box-shadow:0 0 12px #ff00aa; }
-  #meter-fill { height:100%; width:0%; background:linear-gradient(90deg,#00ffcc,#ff00aa,#ffcc00);
-    transition:width 0.2s; box-shadow:0 0 10px #fff; }
-  #meter-label { position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-size:12px; color:#fff;
-    text-shadow:1px 1px 0 #000; white-space:nowrap; font-weight:bold; }
+    width:60%; max-width:300px; height:14px; background:rgba(0,0,0,0.6); border:2px solid #c8a030;
+    border-radius:6px 18px 6px 18px; overflow:hidden; box-shadow:0 0 12px rgba(200,160,48,0.6); }
+  #meter-fill { height:100%; width:0%; background:linear-gradient(90deg,#3a8c3a,#c8a030,#ff6600);
+    transition:width 0.2s; box-shadow:0 0 10px #c8a030; }
+  #meter-label { position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-size:12px; color:#c8a030;
+    text-shadow:1px 1px 0 #000; white-space:nowrap; font-weight:bold; letter-spacing:1px; }
   /* UI 按钮 */
   #ui { position:absolute; inset:0; z-index:60; pointer-events:none; }
   .btn { pointer-events:auto; display:flex; align-items:center; justify-content:center;
-    background:rgba(20,10,30,0.75); border:2px solid #00ffcc; color:#fff; border-radius:50%;
-    width:54px; height:54px; font-size:22px; cursor:pointer; box-shadow:0 0 12px #00ffcc, inset 0 0 8px rgba(0,255,204,0.3);
+    background:rgba(10,6,18,0.8); border:2px solid #c8a030; color:#fff; border-radius:30% 50% 30% 50%;
+    width:54px; height:54px; font-size:22px; cursor:pointer; box-shadow:0 0 10px rgba(200,160,48,0.5), inset 0 0 8px rgba(58,140,58,0.2);
     transition:transform 0.1s, background 0.2s; }
-  .btn:active { transform:scale(0.88); background:rgba(255,0,170,0.6); }
+  .btn:active { transform:scale(0.88); background:rgba(58,140,58,0.5); }
   .btn-row { position:absolute; display:flex; gap:10px; }
   #top-left { top:14px; left:14px; }
   #top-right { top:14px; right:14px; }
@@ -57,18 +67,29 @@
   .btn-wrap { position:relative; }
   /* 开始界面 */
   #start-screen { position:absolute; inset:0; z-index:100; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; background:radial-gradient(circle at 50% 40%, #2a0a3a 0%, #05020a 80%);
-    padding:20px; text-align:center; }
-  #start-screen h1 { font-size:clamp(28px,9vw,56px); color:#fff; font-weight:900; line-height:1.1;
-    text-shadow: 3px 3px 0 #ff00aa, -2px -2px 0 #00ffcc, 0 0 24px #ff00aa; margin-bottom:8px; transform:rotate(-2deg); }
-  #start-screen .sub { font-size:clamp(14px,4.5vw,20px); color:#ffcc00; margin-bottom:30px; text-shadow:2px 2px 0 #000; }
-  #start-screen .slogan { font-size:clamp(13px,4vw,17px); color:#00ffcc; margin-bottom:36px; max-width:320px; line-height:1.6; }
-  #start-btn { pointer-events:auto; padding:16px 44px; font-size:24px; font-weight:900; color:#fff;
-    background:linear-gradient(135deg,#ff00aa,#00ffcc); border:none; border-radius:40px; cursor:pointer;
-    box-shadow:0 0 24px #ff00aa, 0 6px 0 #5a0040; animation: pulse 1.2s ease-in-out infinite; }
-  #start-btn:active { transform:translateY(4px); box-shadow:0 0 12px #ff00aa, 0 2px 0 #5a0040; }
+    align-items:center; justify-content:center; background:radial-gradient(circle at 50% 40%, #2a1a0a 0%, #05020a 80%);
+    padding:20px; text-align:center; overflow:hidden; }
+  #start-screen h1 { font-family:"Nosifer","Cinzel Decorative",serif; font-size:clamp(28px,9vw,56px); color:#c8a030; font-weight:900; line-height:1.15;
+    text-shadow: 3px 3px 0 #000, -2px -2px 0 #ff6600, 0 0 24px #c8a030, 0 0 40px #ff6600; margin-bottom:8px; transform:rotate(-2deg); }
+  #start-screen .sub { font-family:"Cinzel Decorative",serif; font-size:clamp(14px,4.5vw,20px); color:#ff6600; margin-bottom:30px; text-shadow:2px 2px 0 #000, 0 0 10px #c8a030; }
+  #start-screen .slogan { font-size:clamp(13px,4vw,17px); color:#3a8c3a; margin-bottom:36px; max-width:320px; line-height:1.6; text-shadow:1px 1px 0 #000; }
+  #start-btn { pointer-events:auto; padding:16px 44px; font-size:24px; font-weight:bold; color:#fff; font-family:"Cinzel Decorative",serif;
+    background:linear-gradient(135deg,#1a0a2a,#3a2a0a); border:2px solid #c8a030; border-radius:8px 24px 8px 24px; cursor:pointer;
+    box-shadow:0 0 20px rgba(200,160,48,0.6), 0 6px 0 #1a0a00; animation: pulse 1.2s ease-in-out infinite; }
+  #start-btn:active { transform:translateY(4px); box-shadow:0 0 12px rgba(200,160,48,0.5), 0 2px 0 #1a0a00; }
   @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.06);} }
-  .hint { font-size:12px; color:#aaa; margin-top:18px; max-width:280px; line-height:1.6; }
+  .hint { font-size:12px; color:#8a7a5a; margin-top:18px; max-width:300px; line-height:1.7; }
+  /* 开始界面飘动幽灵 & 摇曳烛火 */
+  .ghost-float { position:absolute; font-size:30px; opacity:0.5; pointer-events:none; filter:blur(0.5px); }
+  .ghost-float.g1 { top:18%; left:12%; animation: gfloat 7s ease-in-out infinite; }
+  .ghost-float.g2 { top:30%; right:14%; animation: gfloat 9s ease-in-out infinite 1s; }
+  .ghost-float.g3 { bottom:22%; left:18%; animation: gfloat 8s ease-in-out infinite 0.5s; }
+  .ghost-float.g4 { bottom:30%; right:20%; animation: gfloat 10s ease-in-out infinite 1.5s; }
+  @keyframes gfloat { 0%,100%{transform:translateY(0) rotate(-4deg); opacity:0.4;} 50%{transform:translateY(-26px) rotate(4deg); opacity:0.7;} }
+  .candle { position:absolute; font-size:24px; pointer-events:none; animation: flicker 0.25s ease-in-out infinite alternate; }
+  .candle.c1 { top:14%; left:45%; }
+  .candle.c2 { top:14%; right:38%; }
+  @keyframes flicker { 0%{opacity:0.7; transform:scale(0.95) rotate(-3deg);} 100%{opacity:1; transform:scale(1.05) rotate(3deg);} }
   /* 录制指示 */
   #rec-indicator { position:absolute; top:54px; left:50%; transform:translateX(-50%); z-index:55;
     display:none; align-items:center; gap:6px; color:#ff3344; font-weight:bold; font-size:13px; text-shadow:1px 1px 0 #000; }
@@ -76,17 +97,17 @@
   @keyframes blink { 50%{opacity:0.3;} }
   /* 挑战码弹窗 */
   #share-modal { position:absolute; inset:0; z-index:200; display:none; align-items:center; justify-content:center;
-    background:rgba(0,0,0,0.8); padding:20px; }
-  #share-box { background:#1a0a2a; border:2px solid #00ffcc; border-radius:16px; padding:24px; max-width:340px; width:100%;
-    text-align:center; box-shadow:0 0 30px #00ffcc; }
-  #share-box h3 { color:#fff; margin-bottom:10px; font-size:20px; }
-  #share-code { font-size:30px; font-weight:900; color:#ffcc00; letter-spacing:4px; margin:16px 0; font-family:monospace;
-    background:#000; padding:10px; border-radius:8px; }
+    background:rgba(0,0,0,0.85); padding:20px; }
+  #share-box { background:#1a0a2a; border:2px solid #c8a030; border-radius:8px 20px 8px 20px; padding:24px; max-width:340px; width:100%;
+    text-align:center; box-shadow:0 0 30px rgba(200,160,48,0.5); }
+  #share-box h3 { color:#c8a030; margin-bottom:10px; font-size:20px; font-family:"Cinzel Decorative",serif; }
+  #share-code { font-size:30px; font-weight:900; color:#c8a030; letter-spacing:4px; margin:16px 0; font-family:monospace;
+    background:#05020a; padding:10px; border-radius:8px; border:1px solid #3a8c3a; }
   .share-btn { padding:12px 18px; margin:6px; font-size:14px; font-weight:bold; color:#fff;
-    background:linear-gradient(135deg,#ff00aa,#00ffcc); border:none; border-radius:20px; cursor:pointer; }
-  #close-share { background:#444; }
+    background:linear-gradient(135deg,#1a0a2a,#3a2a0a); border:1px solid #c8a030; border-radius:20px; cursor:pointer; }
+  #close-share { background:#2a1a0a; }
   /* 横屏提示 */
-  #rotate-hint { display:none; position:absolute; inset:0; z-index:300; background:#000; color:#fff;
+  #rotate-hint { display:none; position:absolute; inset:0; z-index:300; background:#000; color:#c8a030;
     align-items:center; justify-content:center; flex-direction:column; font-size:18px; text-align:center; padding:30px; }
   @media (orientation:landscape) and (max-height:500px) {
     #rotate-hint { display:flex; }
@@ -105,6 +126,7 @@
     <div id="rec-indicator"><div id="rec-dot"></div> REC...</div>
 
     <!-- 特效层 -->
+    <div id="fx-mist"></div>
     <div id="fx-glitch"></div>
     <div id="fx-overlay"></div>
     <div id="fx-vignette"></div>
@@ -136,23 +158,29 @@
 
     <!-- 开始界面 -->
     <div id="start-screen">
-      <h1>MONSTER<br>MEME BALL</h1>
-      <div class="sub">🎃 Dark Meme Dance Party 🦇</div>
-      <div class="slogan">No scores, no levels, just vibes.<br>Did you shake today?</div>
-      <button id="start-btn">START VIBING ▶</button>
-      <div class="hint">📱 Tap / Swipe / Long-press / Pinch / Rapid-tap / Shake<br>⌨️ Space=spaz · Arrows=swipe · ↑=hold · M=mute · B=BGM</div>
+      <div class="candle c1">🕯️</div>
+      <div class="candle c2">🕯️</div>
+      <div class="ghost-float g1">👻</div>
+      <div class="ghost-float g2">🦇</div>
+      <div class="ghost-float g3">🕯️</div>
+      <div class="ghost-float g4">🕷️</div>
+      <h1>万圣夜<br>怪物狂欢曲</h1>
+      <div class="sub">🎃 暗黑童话舞蹈派对 🦇</div>
+      <div class="slogan">万圣节不捣蛋，今晚一起发疯跳到散。</div>
+      <button id="start-btn">进入狂欢 ▶</button>
+      <div class="hint">📱 点按/滑动/长按/双指/连点/摇手机<br>⌨️ 空格=抽搐 · 方向键=滑动 · ↑=长按 · M=静音 · B=音乐</div>
     </div>
 
     <!-- 分享弹窗 -->
     <div id="share-modal">
       <div id="share-box">
-        <h3>📤 Share Your Dance</h3>
-        <div style="color:#aaa;font-size:13px;">Challenge code (same dance, different monster)</div>
+        <h3>📤 分享你的狂欢</h3>
+        <div style="color:#8a7a5a;font-size:13px;">挑战码（同样的舞步，不同的怪物）</div>
         <div id="share-code">------</div>
-        <button class="share-btn" id="copy-code">Copy Code</button>
-        <button class="share-btn" id="gen-gif">Save Snapshot</button>
-        <button class="share-btn" id="close-share">Close</button>
-        <div style="color:#666;font-size:11px;margin-top:12px;">Tip: Screenshot to share on TikTok / Bilibili / YouTube</div>
+        <button class="share-btn" id="copy-code">复制挑战码</button>
+        <button class="share-btn" id="gen-gif">保存截图</button>
+        <button class="share-btn" id="close-share">关闭</button>
+        <div style="color:#5a4a2a;font-size:11px;margin-top:12px;">截图分享到抖音/TikTok/B站</div>
       </div>
     </div>
 
@@ -229,11 +257,21 @@ const AudioEngine = {
     const g=this.ctx.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
     src.connect(f); f.connect(g); g.connect(this.master); src.start(t); src.stop(t+dur);
   },
+  // 管风琴音色（正弦波 55/110/220 带 detune，阴森）
+  organ(freq,dur=0.4,vol=0.22){
+    if(!this.ctx||this.muted) return;
+    const t=this.ctx.currentTime, g=this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.04); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    g.connect(this.master);
+    [freq, freq*2, freq*4].forEach((fh,i)=>{ const o=this.ctx.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(fh,t); o.detune.setValueAtTime((i-1)*6,t); o.connect(g); o.start(t); o.stop(t+dur+0.02); });
+  },
+  // 骨头敲击（短噪声快速衰减，像骷髅骨头咯咯）
+  boneKnock(){ this.noise(0.06,0.22,2500); this.noise(0.04,0.12,900); },
   // 音效库
-  kick(){ this.tone(60,0.15,'sine',0.5,0.3); this.noise(0.05,0.1,400); },
+  kick(){ this.tone(60,0.15,'sine',0.5,0.3); this.noise(0.05,0.1,400); this.boneKnock(); },
   snare(){ this.noise(0.12,0.25,2000); this.tone(180,0.05,'triangle',0.15); },
   hat(){ this.noise(0.04,0.12,8000); },
-  bass(){ this.tone(55,0.2,'sawtooth',0.3,0.5); },
+  bass(){ this.organ(55,0.4,0.24); },
   spring(){ this.tone(400,0.25,'sine',0.2,3); this.tone(600,0.25,'sine',0.15,0.3); },
   bark(){ this.tone(140,0.12,'sawtooth',0.25,0.6); this.noise(0.1,0.15,500); },
   scream(){ this.tone(800,0.3,'sawtooth',0.2,0.2); this.noise(0.3,0.1,3000); },
@@ -241,7 +279,17 @@ const AudioEngine = {
   rewind(){ for(let i=0;i<8;i++){ setTimeout(()=>this.tone(200+i*80,0.05,'square',0.1),i*40);} },
   boom(){ this.tone(40,0.5,'sine',0.6,0.2); this.noise(0.4,0.3,300); },
   zap(){ this.tone(1200,0.1,'square',0.15,0.1); this.noise(0.08,0.1,6000); },
-  whoosh(){ this.noise(0.3,0.15,400); },
+  whoosh(){ this.noise(0.3,0.15,400); this.ghostWhisper(); },
+  // 幽灵低语（带通滤波噪声 + 慢起音）
+  ghostWhisper(){
+    if(!this.ctx||this.muted) return;
+    const t=this.ctx.currentTime, dur=0.7, buf=this.ctx.createBuffer(1,this.ctx.sampleRate*dur,this.ctx.sampleRate);
+    const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    const src=this.ctx.createBufferSource(); src.buffer=buf;
+    const f=this.ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.setValueAtTime(900,t); f.frequency.exponentialRampToValueAtTime(1400,t+dur); f.Q.value=6;
+    const g=this.ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.08,t+0.25); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    src.connect(f); f.connect(g); g.connect(this.master); src.start(t); src.stop(t+dur);
+  },
   // 唢呐风（滑音）
   suona(freq){ this.tone(freq,0.4,'sawtooth',0.2,1.1); this.tone(freq*1.5,0.4,'square',0.1,1.1); },
   // 播放节奏型
@@ -252,23 +300,23 @@ const AudioEngine = {
     // BGM 已自带鼓点，只在 BGM 关闭时播放鼓
     if(!this.bgmPlaying){
       if(b===0){ this.kick(); this.bass(); }
-      else if(b===2){ this.snare(); }
+      else if(b===2){ this.snare(); this.boneKnock(); }
       else { this.hat(); }
     }
-    // 偶尔加花
-    if(Math.random()<0.15){ const notes=[220,277,330,415,494]; this.suona(pick(notes)); }
+    // 偶尔加花（阴森小调音阶）
+    if(Math.random()<0.15){ const notes=[110,147,165,196,233]; this.suona(pick(notes)); }
     if(Math.random()<0.05){ pick([this.bark,this.fart,this.scream,this.spring]).call(this); }
   },
   // ---------- 背景音乐 BGM（程序化循环）----------
   bgmPlaying:false, bgmStep:0, bgmTimer:null,
-  // 32-step meme melody (frequencies in Hz, 0=rest) — bouncy silly tune
+  // 32-step melody (frequencies in Hz, 0=rest) — 阴森小调，降一个八度
   bgmMelody:[
-    523,659,784,659, 523,659,784,880, 784,659,587,523, 0,659,784,523,
-    523,587,659,784, 880,784,659,587, 523,0,659,0, 784,659,523,0
+    262,330,392,330, 262,330,392,440, 392,330,294,262, 0,330,392,262,
+    262,294,330,392, 440,392,330,294, 262,0,330,0, 392,330,262,0
   ],
   bgmBass:[
-    131,0,0,0, 196,0,0,0, 220,0,0,0, 175,0,0,0,
-    131,0,0,0, 196,0,0,0, 220,0,175,0, 131,0,0,0
+    55,0,0,0, 73,0,0,0, 82,0,0,0, 65,0,0,0,
+    55,0,0,0, 73,0,0,0, 82,0,65,0, 55,0,0,0
   ],
   startBGM(){
     if(this.bgmPlaying || !this.ctx || this.muted) return;
@@ -279,13 +327,13 @@ const AudioEngine = {
       if(!this.bgmPlaying) return;
       const step = this.bgmStep % 32;
       const m = this.bgmMelody[step];
-      if(m) this.tone(m, stepDur*0.85, 'square', 0.10);
+      if(m) this.organ(m, stepDur*1.6, 0.13);
       const b = this.bgmBass[step];
-      if(b) this.tone(b, stepDur*1.9, 'triangle', 0.16);
+      if(b) this.organ(b, stepDur*2.2, 0.18);
       if(step%2===0) this.hat();
       if(step%8===0) this.kick();
-      if(step%8===4) this.snare();
-      if(step===30 && Math.random()<0.4) this.spring();
+      if(step%8===4){ this.snare(); this.boneKnock(); }
+      if(step===30 && Math.random()<0.4) this.ghostWhisper();
       if(step===15 && Math.random()<0.15) this.fart();
       this.bgmStep++;
     };
@@ -305,10 +353,17 @@ const AudioEngine = {
 // ---------- Three.js 场景 ----------
 let scene, camera, renderer, clock;
 let stageGroup, monster, ground, snow;
+let fireflies, leaves, bats, cauldrons=[];
+let pumpkinLights=[], bubblesArr=[];
+let fireflyData=[], leafData=[], batsArr=[];
 let monsters=[]; // 克隆体
 const COLORS = {
-  bg:0x0e3b2a,      // 圣诞深绿
-  fog:0x0e3b2a
+  bg: 0x0a0612,      // deep dark purple-black
+  fog: 0x1a0a2a,     // dark purple fog
+  ground: 0x2a1a0a,   // dark earth
+  accent: 0xc8a030,   // dark gold
+  ghost: 0x4a6fa5,    // ghostly blue
+  pumpkin: 0xff6600,  // pumpkin orange
 };
 
 let webglAvailable = true;
@@ -336,16 +391,18 @@ function initThree(){
   try{
     scene = new THREE.Scene();
     scene.background = new THREE.Color(COLORS.bg);
-    scene.fog = new THREE.Fog(COLORS.fog, 10, 26);
+    scene.fog = new THREE.FogExp2(COLORS.fog, 0.04);
 
     camera = new THREE.PerspectiveCamera(68, 1, 0.1, 100);
-    camera.position.set(0, 0.8, 9);
-    camera.lookAt(0,0.3,0);
+    camera.position.set(0, 1.2, 7);
+    camera.lookAt(0,0.5,0);
 
     renderer = new THREE.WebGLRenderer({ canvas:document.getElementById('game-canvas'), antialias:true, alpha:false, powerPreference:'high-performance', preserveDrawingBuffer:true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     renderer.setClearColor(COLORS.bg, 1);
   }catch(e){
     console.warn('WebGL init failed', e);
@@ -354,38 +411,186 @@ function initThree(){
     return false;
   }
 
-  // 灯光：Loopit 风格明亮顶光 + 柔边
-  const amb = new THREE.AmbientLight(0x3a2a5a, 0.9); scene.add(amb);
-  const key = new THREE.DirectionalLight(0xffffff, 1.25); key.position.set(4,8,5); key.castShadow=true; key.shadow.mapSize.set(1024,1024); key.shadow.camera.left=-8; key.shadow.camera.right=8; key.shadow.camera.top=8; key.shadow.camera.bottom=-8; scene.add(key);
-  const fill = new THREE.DirectionalLight(0xaaccff, 0.35); fill.position.set(-4,3,-3); scene.add(fill);
-  const pink = new THREE.PointLight(0xff33aa, 0.8, 20); pink.position.set(-3,2,3); scene.add(pink);
+  // 灯光：哥特墓地月光 + 南瓜灯
+  const amb = new THREE.AmbientLight(0x2a1a4a, 0.4); scene.add(amb);
+  const moon = new THREE.DirectionalLight(0x8aaaff, 0.8); moon.position.set(-6,12,-4); moon.castShadow=true; moon.shadow.mapSize.set(1024,1024); moon.shadow.camera.left=-9; moon.shadow.camera.right=9; moon.shadow.camera.top=9; moon.shadow.camera.bottom=-9; scene.add(moon);
+  const fill = new THREE.DirectionalLight(0x4a6fa5, 0.25); fill.position.set(4,4,3); scene.add(fill);
+
+  // 南瓜点光（舞池四周暖橙）
+  const plPositions = [[-3,0.4,2],[3,0.4,2],[-3,0.4,-2.5],[3,0.4,-2.5],[0,0.4,3.2],[0,0.4,-3.2]];
+  for(let i=0;i<plPositions.length;i++){
+    const pl = new THREE.PointLight(0xff6600, rand(0.5,0.8), 8); pl.position.set(plPositions[i][0],plPositions[i][1],plPositions[i][2]);
+    scene.add(pl); pumpkinLights.push(pl);
+  }
 
   // 舞台
   stageGroup = new THREE.Group(); scene.add(stageGroup);
 
-  // 地面：雪白平面（圣诞雪地）
-  const floorGeo = new THREE.PlaneGeometry(30,30);
-  const floorMat = new THREE.MeshStandardMaterial({ color:0xf5f5f0, roughness:0.95, metalness:0.0, flatShading:true });
+  // 地面：暗土平面（墓地泥土）
+  const floorGeo = new THREE.PlaneGeometry(40,40);
+  const floorMat = new THREE.MeshStandardMaterial({ color:COLORS.ground, roughness:0.9, metalness:0.0 });
   ground = new THREE.Mesh(floorGeo, floorMat);
   ground.rotation.x = -Math.PI/2; ground.position.y=-1.2; ground.receiveShadow=true; stageGroup.add(ground);
 
-  // 飘雪（轻柔）
-  const snowCount = 200;
-  const snowGeo = new THREE.BufferGeometry();
-  const snowPos = new Float32Array(snowCount*3);
-  for(let i=0;i<snowCount;i++){
-    snowPos[i*3] = rand(-10,10);
-    snowPos[i*3+1] = rand(-1.2, 6);
-    snowPos[i*3+2] = rand(-8,8);
+  // 舞池圆盘（带魔法阵纹理）
+  const magicTex = makeMagicCircleTexture();
+  const discMat = new THREE.MeshStandardMaterial({ color:0x1a1208, roughness:0.6, metalness:0.3,
+    map:magicTex, emissiveMap:magicTex, emissive:0xc8a030, emissiveIntensity:0.55, transparent:true, opacity:0.92 });
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(2.4, 48), discMat);
+  disc.rotation.x = -Math.PI/2; disc.position.y=-1.18; disc.receiveShadow=true; stageGroup.add(disc);
+
+  // 天空中的月亮（带陨石坑纹理）
+  const moonTex = makeMoonTexture();
+  const moonMesh = new THREE.Mesh(new THREE.SphereGeometry(2.6, 32, 32),
+    new THREE.MeshStandardMaterial({ color:0xfff8dc, map:moonTex, emissive:0xfff8dc, emissiveIntensity:0.45, roughness:0.95 }));
+  moonMesh.position.set(-7, 7, -12); scene.add(moonMesh);
+  const moonGlow = new THREE.PointLight(0xfff8dc, 0.6, 30); moonGlow.position.set(-7,7,-10); scene.add(moonGlow);
+
+  // 墓地装饰（墓碑/枯树/坩埚/南瓜灯）
+  createGraveyard();
+
+  // 萤火虫 / 幽灵粒子（黄绿光点漂浮）
+  const flyCount = 130;
+  fireflyData = []; const flyGeo = new THREE.BufferGeometry();
+  const flyPos = new Float32Array(flyCount*3);
+  for(let i=0;i<flyCount;i++){
+    const x=rand(-9,9), y=rand(-0.5,5), z=rand(-7,5);
+    flyPos[i*3]=x; flyPos[i*3+1]=y; flyPos[i*3+2]=z;
+    fireflyData.push({x,y,z,phase:rand(0,TAU),amp:rand(0.15,0.45),sp:rand(0.3,0.8)});
   }
-  snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos,3));
-  const snowMat = new THREE.PointsMaterial({ color:0xffffff, size:0.08, transparent:true, opacity:0.85, depthWrite:false });
-  snow = new THREE.Points(snowGeo, snowMat);
-  stageGroup.add(snow);
+  flyGeo.setAttribute('position', new THREE.BufferAttribute(flyPos,3));
+  const flyMat = new THREE.PointsMaterial({ color:0xccff44, size:0.12, transparent:true, opacity:0.85, depthWrite:false, blending:THREE.AdditiveBlending });
+  fireflies = new THREE.Points(flyGeo, flyMat); stageGroup.add(fireflies);
+
+  // 飘落枯叶（棕橙红小片）
+  const leafCount = 50; leafData=[]; const leafGeo = new THREE.BufferGeometry();
+  const leafPos = new Float32Array(leafCount*3);
+  for(let i=0;i<leafCount;i++){
+    const x=rand(-9,9), y=rand(0,6), z=rand(-7,5);
+    leafPos[i*3]=x; leafPos[i*3+1]=y; leafPos[i*3+2]=z;
+    leafData.push({vx:rand(-0.2,0.2),vr:rand(-2,2),rot:rand(0,TAU)});
+  }
+  leafGeo.setAttribute('position', new THREE.BufferAttribute(leafPos,3));
+  const leafMat = new THREE.PointsMaterial({ color:pick([0x8a4a1a,0xc8602a,0xaa3010,0xd8a040]), size:0.16, transparent:true, opacity:0.9, depthWrite:false });
+  leaves = new THREE.Points(leafGeo, leafMat); stageGroup.add(leaves);
+
+  // 蝙蝠群（深色小三角面飞行）
+  bats = new THREE.Group(); batsArr=[];
+  const batMat = new THREE.MeshBasicMaterial({ color:0x0a0408, side:THREE.DoubleSide });
+  for(let i=0;i<24;i++){
+    const b = new THREE.Mesh(new THREE.ConeGeometry(0.12,0.3,3), batMat);
+    const cx=rand(-7,7), cy=rand(1.5,4.5), cz=rand(-5,3), rad=rand(1,2.5), sp=rand(0.4,1.1), ph=rand(0,TAU), yp=rand(0.4,1.2);
+    b.position.set(cx,cy,cz); bats.add(b);
+    batsArr.push({mesh:b,cx,cy,cz,rad,sp,ph,yp});
+  }
+  stageGroup.add(bats);
 
   clock = new THREE.Clock();
   resize();
   return true;
+}
+
+// 程序化纹理：魔法阵
+function makeMagicCircleTexture(){
+  const c = document.createElement('canvas'); c.width=c.height=256;
+  const x = c.getContext('2d');
+  x.fillStyle='#0a0604'; x.fillRect(0,0,256,256);
+  x.translate(128,128); x.strokeStyle='#c8a030'; x.lineWidth=2; x.shadowColor='#c8a030'; x.shadowBlur=8;
+  for(let r=0;r<3;r++){ x.beginPath(); x.arc(0,0,40+r*38,0,TAU); x.stroke(); }
+  // 五芒星
+  x.beginPath();
+  for(let i=0;i<=5;i++){ const a=-Math.PI/2+i*TAU*2/5; const px=Math.cos(a)*110, py=Math.sin(a)*110; i?x.lineTo(px,py):x.moveTo(px,py); }
+  x.stroke();
+  // 符文刻线
+  x.lineWidth=1; x.strokeStyle='#3a8c3a';
+  for(let i=0;i<12;i++){ const a=i*TAU/12; x.beginPath(); x.moveTo(Math.cos(a)*78,Math.sin(a)*78); x.lineTo(Math.cos(a)*96,Math.sin(a)*96); x.stroke(); }
+  const t=new THREE.CanvasTexture(c); return t;
+}
+// 程序化纹理：月亮陨石坑
+function makeMoonTexture(){
+  const c=document.createElement('canvas'); c.width=c.height=256;
+  const x=c.getContext('2d');
+  x.fillStyle='#fff8dc'; x.fillRect(0,0,256,256);
+  for(let i=0;i<40;i++){
+    const r=rand(4,22), px=rand(0,256), py=rand(0,256);
+    x.fillStyle='rgba(160,140,90,'+rand(0.15,0.4)+')';
+    x.beginPath(); x.arc(px,py,r,0,TAU); x.fill();
+  }
+  for(let i=0;i<20;i++){ x.fillStyle='rgba(120,100,70,'+rand(0.2,0.5)+')'; x.beginPath(); x.arc(rand(0,256),rand(0,256),rand(2,8),0,TAU); x.fill(); }
+  return new THREE.CanvasTexture(c);
+}
+// 程序化纹理：南瓜鬼脸
+function makeJackFaceTexture(){
+  const c=document.createElement('canvas'); c.width=c.height=128;
+  const x=c.getContext('2d');
+  x.fillStyle='#000'; x.fillRect(0,0,128,128);
+  x.fillStyle='#ffaa00'; // 三角眼
+  x.beginPath(); x.moveTo(36,44); x.lineTo(28,60); x.lineTo(52,60); x.closePath(); x.fill();
+  x.beginPath(); x.moveTo(92,44); x.lineTo(84,60); x.lineTo(108,60); x.closePath(); x.fill();
+  // 锯齿嘴
+  x.beginPath(); x.moveTo(28,78); x.lineTo(40,90); x.lineTo(52,78); x.lineTo(64,90); x.lineTo(76,78); x.lineTo(88,90); x.lineTo(100,78); x.lineTo(100,86); x.lineTo(88,98); x.lineTo(76,86); x.lineTo(64,98); x.lineTo(52,86); x.lineTo(40,98); x.lineTo(28,86); x.closePath(); x.fill();
+  const t=new THREE.CanvasTexture(c); return t;
+}
+// 程序化纹理：暗纹长袍
+function makeRobePatternTexture(){
+  const c=document.createElement('canvas'); c.width=c.height=64;
+  const x=c.getContext('2d');
+  x.fillStyle='#1a0a2a'; x.fillRect(0,0,64,64);
+  x.strokeStyle='#c8a030'; x.lineWidth=1;
+  for(let i=0;i<6;i++){ x.beginPath(); x.arc(rand(8,56),rand(8,56),rand(2,5),0,TAU); x.stroke(); }
+  for(let i=0;i<8;i++){ x.fillStyle='rgba(58,140,58,0.4)'; x.beginPath(); x.arc(rand(0,64),rand(0,64),1,0,TAU); x.fill(); }
+  return new THREE.CanvasTexture(c);
+}
+
+// ---------- 墓地装饰 ----------
+function createGraveyard(){
+  // 墓碑
+  for(let i=0;i<10;i++){
+    const w=rand(0.36,0.55), h=rand(0.7,1.05);
+    const tomb = new THREE.Mesh(new THREE.BoxGeometry(w,h,0.16),
+      new THREE.MeshStandardMaterial({ color:0x3a3a3a, roughness:0.95 }));
+    const a=rand(0,TAU), r=rand(3,5);
+    tomb.position.set(Math.cos(a)*r, -1.2+h/2-0.05, Math.sin(a)*r);
+    tomb.rotation.y=rand(0,TAU); tomb.rotation.z=rand(-0.18,0.18); tomb.castShadow=true; tomb.receiveShadow=true;
+    stageGroup.add(tomb);
+  }
+  // 枯树
+  for(let i=0;i<3;i++){
+    const tree=new THREE.Group();
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.2,2.4,8), new THREE.MeshStandardMaterial({color:0x1a0a00,roughness:1}));
+    trunk.position.y=1.0; trunk.castShadow=true; tree.add(trunk);
+    for(let b=0;b<6;b++){
+      const branch=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.07,rand(0.5,1.1),6), new THREE.MeshStandardMaterial({color:0x1a0a00,roughness:1}));
+      branch.position.y=rand(1.4,2.2); branch.rotation.z=rand(-1.3,1.3); branch.rotation.y=rand(0,TAU); tree.add(branch);
+    }
+    // 蛛网透明面
+    const web=new THREE.Mesh(new THREE.PlaneGeometry(1.6,1.6), new THREE.MeshBasicMaterial({color:0xcccccc,transparent:true,opacity:0.12,side:THREE.DoubleSide}));
+    web.position.set(0.5,1.6,0); web.rotation.y=0.6; tree.add(web);
+    const a=rand(0,TAU), r=rand(4,6); tree.position.set(Math.cos(a)*r,-1.2,Math.sin(a)*r); tree.rotation.y=rand(0,TAU);
+    stageGroup.add(tree);
+  }
+  // 坩埚 + 冒泡
+  for(let i=0;i<3;i++){
+    const caul=new THREE.Mesh(new THREE.SphereGeometry(0.55,18,12,0,TAU,0,Math.PI/2),
+      new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.7,metalness:0.5,side:THREE.DoubleSide}));
+    const a=rand(0,TAU), r=rand(3,5); caul.position.set(Math.cos(a)*r,-1.2,Math.sin(a)*r); caul.castShadow=true; stageGroup.add(caul);
+    const bubbles=new THREE.Group(); bubbles.position.copy(caul.position);
+    stageGroup.add(bubbles); cauldrons.push({mesh:cauldrons.length, bubbles});
+    const bubs=[];
+    for(let b=0;b<8;b++){
+      const bub=new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), new THREE.MeshStandardMaterial({color:0x3aff66,emissive:0x2acc44,emissiveIntensity:0.6,transparent:true,opacity:0.8}));
+      bub.position.set(rand(-0.3,0.3),0,rand(-0.3,0.3)); bubbles.add(bub); bubs.push({mesh:bub,phase:rand(0,TAU),sp:rand(0.5,1.2)});
+    }
+    bubblesArr.push(bubs);
+  }
+  // 南瓜鬼脸灯
+  const faceTex=makeJackFaceTexture();
+  for(let i=0;i<6;i++){
+    const jack=new THREE.Mesh(new THREE.SphereGeometry(0.28,20,16),
+      new THREE.MeshStandardMaterial({color:0xff6600,emissive:0xff6600,emissiveIntensity:0.7,map:faceTex,emissiveMap:faceTex}));
+    const a=rand(0,TAU), r=rand(2.8,4.5); jack.position.set(Math.cos(a)*r,-0.85,Math.sin(a)*r); jack.castShadow=true; stageGroup.add(jack);
+    const jl=new THREE.PointLight(0xff6600,0.5,4); jl.position.copy(jack.position); jl.position.y+=0.1; scene.add(jl);
+  }
 }
 
 function resize(){
@@ -606,6 +811,8 @@ function createMonster(type, rng){
 
 function decorateMonster(g, type, mat, loopit, rng){
   const P = g.userData.parts;
+  // 南瓜鬼脸贴图（共用）
+  const jackTex = makeJackFaceTexture();
   switch(type){
     case 'pumpkin_king':{
       // 南瓜茎（头顶）
@@ -619,23 +826,55 @@ function decorateMonster(g, type, mat, loopit, rng){
         rib.position.z=Math.sin((i/6)*TAU)*0.42;
         g.add(rib);
       }
-      // 骷髅身体（肋骨，覆盖胸腔+腰）
-      for(let i=0;i<4;i++){
-        const rib = new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,0.8,6), mat(0xdddddd));
-        rib.position.y=0.8-i*0.26; rib.rotation.z=Math.PI/2; g.add(rib);
+      // 头内发光（小自发光球）
+      const innerGlow = new THREE.Mesh(new THREE.SphereGeometry(0.18,12,10),
+        new THREE.MeshStandardMaterial({color:0xffaa00,emissive:0xff8800,emissiveIntensity:1.4,transparent:true,opacity:0.85}));
+      innerGlow.position.y=1.28; innerGlow.scale.set(0.9,1.0,0.9); g.add(innerGlow);
+      // 南瓜鬼脸贴图
+      if(P.head){ P.head.material.map = jackTex; P.head.material.emissiveMap = jackTex; P.head.material.emissive = new THREE.Color(0xff7700); P.head.material.emissiveIntensity = 0.6; P.head.material.needsUpdate=true; }
+      // 骷髅肋骨（6 根更细）
+      for(let i=0;i<6;i++){
+        const rib = new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,0.78,6), mat(0xdddddd));
+        rib.position.y=0.85-i*0.17; rib.rotation.z=Math.PI/2; g.add(rib);
       }
+      // 关节魔法火焰（小自发光锥）
+      const flameMat = new THREE.MeshStandardMaterial({color:0xffdd44,emissive:0xffaa00,emissiveIntensity:1.3,transparent:true,opacity:0.85});
+      const jFlames=[];
+      [[-0.4,0.72,0],[0.4,0.72,0],[-0.18,-0.12,0],[0.18,-0.12,0]].forEach(p=>{
+        const f=new THREE.Mesh(new THREE.ConeGeometry(0.05,0.14,6), flameMat);
+        f.position.set(p[0],p[1]+0.12,p[2]); f.rotation.x=Math.PI; g.add(f); jFlames.push(f);
+      });
+      P.jointFlames=jFlames;
       break;
     }
     case 'stitched_bride':{
       // 高耸白发（头顶）
-      const hair = new THREE.Mesh(new THREE.ConeGeometry(0.45,1.1,12), mat(0xffffff));
+      const hair = new THREE.Mesh(new THREE.ConeGeometry(0.45,1.1,12), mat(0xeeeedd));
       hair.position.y=2.1; g.add(hair);
-      // 婚纱（从腰往下）
-      const dress = new THREE.Mesh(new THREE.ConeGeometry(0.9,1.2,16,1,true), mat(0xffffff,{transparent:true,opacity:0.85,side:THREE.DoubleSide}));
+      // 头纱（顶部透明面）
+      const veil = new THREE.Mesh(new THREE.PlaneGeometry(0.7,1.0),
+        mat(0xffffff,{transparent:true,opacity:0.35,side:THREE.DoubleSide}));
+      veil.position.set(0,1.4,0.28); veil.rotation.x=-0.2; g.add(veil); P.veil=veil;
+      // 婚纱（多层圆锥，更多段）
+      const dress = new THREE.Mesh(new THREE.ConeGeometry(0.95,1.25,28,1,true),
+        mat(0xffffff,{transparent:true,opacity:0.88,side:THREE.DoubleSide}));
       dress.position.y=-0.65; dress.rotation.x=Math.PI; g.add(dress); P.dress=dress;
-      // 缝线（脸部）
-      const stitch = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.4,0.02), mat(0x666666));
-      stitch.position.set(0,1.28,0.36); g.add(stitch);
+      const dress2 = new THREE.Mesh(new THREE.ConeGeometry(0.7,1.0,24,1,true),
+        mat(0xeef0ff,{transparent:true,opacity:0.7,side:THREE.DoubleSide}));
+      dress2.position.y=-0.55; dress2.rotation.x=Math.PI; g.add(dress2);
+      // 缝线（脸部 + 身体多处小方块）
+      for(let i=0;i<6;i++){
+        const st = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.06,0.02), mat(0x554466));
+        st.position.set(rand(-0.12,0.12), 1.2+i*0.06, 0.36); g.add(st);
+      }
+      for(let i=0;i<5;i++){
+        const st = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.05,0.02), mat(0x554466));
+        st.position.set(0.2, 0.5+i*0.12, 0.3); st.rotation.z=0.4; g.add(st);
+      }
+      // 魔法线（眼到脸颊）
+      const thread = new THREE.Mesh(new THREE.CylinderGeometry(0.006,0.006,0.3,6),
+        new THREE.MeshStandardMaterial({color:0x4a6fa5,emissive:0x4a6fa5,emissiveIntensity:0.6}));
+      thread.position.set(0.15,1.2,0.36); thread.rotation.z=Math.PI/2; thread.rotation.x=0.4; g.add(thread);
       break;
     }
     case 'mummy':{
@@ -652,75 +891,143 @@ function decorateMonster(g, type, mat, loopit, rng){
       break;
     }
     case 'vampire':{
-      // 尖牙（嘴部）
-      const f1 = new THREE.Mesh(new THREE.ConeGeometry(0.04,0.13,6), mat(0xffffff));
-      f1.position.set(-0.08,1.06,0.35); f1.rotation.x=Math.PI; g.add(f1);
+      // 尖牙（更长更尖）
+      const f1 = new THREE.Mesh(new THREE.ConeGeometry(0.04,0.17,6), mat(0xffffff));
+      f1.position.set(-0.08,1.04,0.35); f1.rotation.x=Math.PI; g.add(f1);
       const f2 = f1.clone(); f2.position.x=0.08; g.add(f2);
-      // 斗篷（从腰往下）
-      const cape = new THREE.Mesh(new THREE.ConeGeometry(1.0,1.5,12,1,true), mat(0x440022,{side:THREE.DoubleSide}));
+      // 立领（上翻锥）
+      const collar = new THREE.Mesh(new THREE.ConeGeometry(0.3,0.22,16,1,true),
+        mat(0x660011,{side:THREE.DoubleSide}));
+      collar.position.y=0.82; g.add(collar); P.collar=collar;
+      // 金线刺绣（领口小金环）
+      const goldMat = mat(0xc8a030,{metalness:0.7,roughness:0.3,emissive:0x553300,emissiveIntensity:0.4});
+      for(let i=0;i<8;i++){
+        const a=i/8*TAU;
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.27,0.015,6,8), goldMat);
+        ring.position.set(Math.cos(a)*0.27,0.85,Math.sin(a)*0.27); ring.rotation.x=Math.PI/2; g.add(ring);
+      }
+      // 斗篷（深红丝绒，更多段）
+      const cape = new THREE.Mesh(new THREE.ConeGeometry(1.05,1.55,28,1,true),
+        mat(0x660011,{side:THREE.DoubleSide,roughness:0.5,metalness:0.1}));
       cape.position.y=-0.55; cape.rotation.x=Math.PI; g.add(cape); P.cape=cape;
-      // 蝙蝠翅膀（胸腔两侧）
-      const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.35,0.05), mat(0x220011));
-      wingL.position.set(-0.8,0.55,0); wingL.rotation.y=0.5; g.add(wingL); P.wingL=wingL;
-      const wingR = wingL.clone(); wingR.position.x=0.8; wingR.rotation.y=-0.5; g.add(wingR); P.wingR=wingR;
+      // 蝙蝠翅膀（变形面：膜翼）
+      function makeWing(side){
+        const geo = new THREE.PlaneGeometry(0.8,0.5,8,5);
+        const pos = geo.attributes.position;
+        for(let i=0;i<pos.count;i++){
+          const px=pos.getX(i), py=pos.getY(i);
+          // 翅膀指骨下凹
+          pos.setZ(i, Math.sin(px*9)*0.06 - 0.05);
+          pos.setY(i, py - Math.abs(Math.sin(px*5))*0.12);
+        }
+        pos.needsUpdate=true; geo.computeVertexNormals();
+        const w = new THREE.Mesh(geo, mat(0x220011,{side:THREE.DoubleSide,transparent:true,opacity:0.82}));
+        w.position.set(side*0.55,0.6,0); w.rotation.y=side*0.5; return w;
+      }
+      const wingL=makeWing(-1), wingR=makeWing(1);
+      g.add(wingL,wingR); P.wingL=wingL; P.wingR=wingR;
       break;
     }
     case 'sea_witch':{
-      // 章鱼触手（替换腿）
+      // 章鱼触手（带吸球 + 光泽）
       P.legL.visible=false; P.legR.visible=false;
+      const tentMat = new THREE.MeshStandardMaterial({color:0x8822aa,roughness:0.3,metalness:0.1});
       for(let i=0;i<6;i++){
-        const tent = new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.04,1.0,8), loopit(0x8822aa));
+        const tent = new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.04,1.0,10), tentMat);
         const a = (i/6)*TAU;
         tent.position.set(Math.cos(a)*0.42,-1.1,Math.sin(a)*0.42);
         tent.rotation.z = Math.cos(a)*0.3;
         tent.castShadow=true; g.add(tent);
         if(!P.tentacles) P.tentacles=[]; P.tentacles.push(tent);
+        // 吸球（沿触手长度小球）
+        for(let s=0;s<5;s++){
+          const suck = new THREE.Mesh(new THREE.SphereGeometry(0.022,8,8), new THREE.MeshStandardMaterial({color:0xaa44cc,roughness:0.2,metalness:0.2}));
+          const ty=-0.15-s*0.18;
+          suck.position.set(Math.cos(a)*0.105, ty, Math.sin(a)*0.105);
+          tent.add(suck);
+        }
       }
-      // 白色大背头（头顶）
-      const hair = new THREE.Mesh(new THREE.SphereGeometry(0.48,12,10), mat(0xffffff));
-      hair.position.y=1.6; hair.scale.set(1,0.8,1); g.add(hair);
+      // 银色大背头（更大更立体）
+      const hair = new THREE.Mesh(new THREE.SphereGeometry(0.54,16,14),
+        new THREE.MeshStandardMaterial({color:0xe8e8f0,roughness:0.35,metalness:0.2}));
+      hair.position.y=1.62; hair.scale.set(1.1,0.85,1.1); g.add(hair);
       break;
     }
     case 'dark_witch':{
-      // 黑角（头顶两侧）
-      const h1 = new THREE.Mesh(new THREE.ConeGeometry(0.1,0.38,8), mat(0x111111));
-      h1.position.set(-0.26,1.58,0); h1.rotation.z=0.3; g.add(h1);
-      const h2 = h1.clone(); h2.position.x=0.26; h2.rotation.z=-0.3; g.add(h2);
+      // 弯角（轻微弯曲：两段锥拼接）
+      function makeHorn(side){
+        const grp=new THREE.Group();
+        const base=new THREE.Mesh(new THREE.ConeGeometry(0.1,0.34,10), mat(0x111111));
+        base.position.y=0.17; grp.add(base);
+        const tip=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.2,10), mat(0x222222));
+        tip.position.set(side*0.08,0.4,0.02); tip.rotation.z=side*0.6; grp.add(tip);
+        return grp;
+      }
+      const h1=makeHorn(-1); h1.position.set(-0.26,1.58,0); g.add(h1);
+      const h2=makeHorn(1); h2.position.set(0.26,1.58,0); g.add(h2);
       // 绿火（头顶）
       const fire = new THREE.Mesh(new THREE.ConeGeometry(0.18,0.45,8), mat(0x33ff33,{transparent:true,opacity:0.7}));
       fire.position.y=1.72; g.add(fire); P.fire=fire;
-      // 长袍（从腰往下）
-      const robe = new THREE.Mesh(new THREE.ConeGeometry(1.0,1.5,16,1,true), mat(0x220044,{side:THREE.DoubleSide}));
+      // 环绕身体的魔法火球（随机轨道）
+      P.fireOrbs=[];
+      const orbMat=new THREE.MeshStandardMaterial({color:0x3aff66,emissive:0x2acc44,emissiveIntensity:1.2,transparent:true,opacity:0.85});
+      for(let i=0;i<8;i++){
+        const orb=new THREE.Mesh(new THREE.SphereGeometry(0.05,8,8), orbMat);
+        orb.userData={a:i/8*TAU,r:rand(0.5,0.9),y:rand(0.2,1.2),sp:rand(0.6,1.6)*(rng()<0.5?1:-1)};
+        g.add(orb); P.fireOrbs.push(orb);
+      }
+      // 长袍（带暗纹贴图）
+      const robeTex=makeRobePatternTexture();
+      const robe = new THREE.Mesh(new THREE.ConeGeometry(1.0,1.5,16,1,true),
+        mat(0x220044,{side:THREE.DoubleSide,map:robeTex}));
       robe.position.y=-0.6; robe.rotation.x=Math.PI; g.add(robe); P.robe=robe;
       break;
     }
     case 'witch_mouse':{
-      // 大圆耳（头两侧）
-      const earL = new THREE.Mesh(new THREE.SphereGeometry(0.2,12,10), loopit(0xeebb44));
-      earL.position.set(-0.42,1.48,0); g.add(earL);
-      const earR = earL.clone(); earR.position.x=0.42; g.add(earR);
-      const earL2 = new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8), mat(0xff88aa));
-      earL2.position.set(-0.42,1.48,0.08); g.add(earL2);
-      const earR2 = earL2.clone(); earR2.position.x=0.42; g.add(earR2);
-      // 巫师袍
-      const robe = new THREE.Mesh(new THREE.ConeGeometry(0.85,1.3,16,1,true), mat(0x331155,{side:THREE.DoubleSide}));
+      // 大圆耳（两颗大球）
+      const earL = new THREE.Mesh(new THREE.SphereGeometry(0.26,16,14), loopit(0xeebb44));
+      earL.position.set(-0.5,1.5,0); g.add(earL);
+      const earR = earL.clone(); earR.position.x=0.5; g.add(earR);
+      const earL2 = new THREE.Mesh(new THREE.SphereGeometry(0.14,12,10), mat(0xff88aa));
+      earL2.position.set(-0.5,1.5,0.06); g.add(earL2);
+      const earR2 = earL2.clone(); earR2.position.x=0.5; g.add(earR2);
+      // 巫师袍（带星星图案贴图）
+      const starTex=makeRobePatternTexture();
+      const robe = new THREE.Mesh(new THREE.ConeGeometry(0.9,1.35,16,1,true),
+        mat(0x331155,{side:THREE.DoubleSide,map:starTex}));
       robe.position.y=-0.55; robe.rotation.x=Math.PI; g.add(robe);
-      // 巫师帽（头顶）
-      const hat = new THREE.Mesh(new THREE.ConeGeometry(0.38,0.7,12), mat(0x220044));
+      // 巫师帽（锥 + 帽檐）
+      const hat = new THREE.Mesh(new THREE.ConeGeometry(0.38,0.7,14), mat(0x220044));
       hat.position.y=1.82; g.add(hat);
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.04,20), mat(0x220044));
+      brim.position.y=1.52; g.add(brim);
       break;
     }
     case 'frankenstein':{
-      // 螺丝钉脖子（脖子两侧）
-      const b1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.18,8), mat(0x888888));
-      b1.position.set(-0.32,0.95,0); b1.rotation.z=Math.PI/2; g.add(b1);
-      const b2 = b1.clone(); b2.position.x=0.32; g.add(b2);
+      // 螺丝钉脖子（圆柱 + 球帽，略锈色）
+      function makeBolt(x){
+        const grp=new THREE.Group();
+        const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.18,8), mat(0x8a7a4a,{metalness:0.6,roughness:0.5}));
+        shaft.rotation.z=Math.PI/2; grp.add(shaft);
+        const cap=new THREE.Mesh(new THREE.SphereGeometry(0.07,10,8), mat(0x9a8a5a,{metalness:0.6,roughness:0.5}));
+        cap.position.x=-0.1; grp.add(cap);
+        grp.position.set(x,0.95,0); return grp;
+      }
+      g.add(makeBolt(-0.32), makeBolt(0.32));
       // 平头（头顶）
       const flat = new THREE.Mesh(new THREE.BoxGeometry(0.85,0.18,0.8), mat(0x333333));
       flat.position.y=1.72; g.add(flat);
-      // 伤疤（脸部）
-      const scar = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.03,0.02), mat(0x886644));
-      scar.position.set(0.12,1.3,0.36); g.add(scar);
+      // 伤疤（脸部 + 身体更明显的缝合）
+      for(let i=0;i<4;i++){
+        const scar = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.03,0.02), mat(0x553322));
+        scar.position.set(0.1,1.34-i*0.06,0.36); scar.rotation.z=rand(-0.2,0.2); g.add(scar);
+      }
+      for(let i=0;i<5;i++){
+        const scar = new THREE.Mesh(new THREE.BoxGeometry(0.03,0.18,0.02), mat(0x553322));
+        scar.position.set(rand(-0.2,0.2),0.5+i*0.1,0.34); g.add(scar);
+      }
+      // 皮肤略带绿色粗糙感
+      if(P.chest){ P.chest.material.color.setHex(0x449944); P.chest.material.roughness=0.8; }
       break;
     }
   }
@@ -1024,6 +1331,11 @@ function animateMonster(m, dt, t, beat){
   if(P.fire){ P.fire.scale.y = 1 + Math.sin(t*15)*0.4; P.fire.position.y = 1.72 + Math.sin(t*10)*0.05; }
   if(P.cape){ P.cape.rotation.z = Math.sin(t*3)*0.15; }
   if(P.dress){ P.dress.rotation.z = Math.sin(t*3)*0.1; }
+  if(P.veil){ P.veil.rotation.z = Math.sin(t*2)*0.06; }
+  // 关节魔法火闪烁
+  if(P.jointFlames){ P.jointFlames.forEach((f,i)=>{ f.scale.y = 1+Math.sin(t*12+i)*0.35; f.scale.x = 1+Math.cos(t*9+i)*0.2; }); }
+  // 暗黑女巫环绕火球轨道
+  if(P.fireOrbs){ P.fireOrbs.forEach(o=>{ const u=o.userData; u.a += u.sp*dt; o.position.x=Math.cos(u.a)*u.r; o.position.z=Math.sin(u.a)*u.r; o.position.y=u.y+Math.sin(t*3+u.a)*0.15; }); }
 }
 
 // 变异效果
@@ -1105,7 +1417,7 @@ function triggerMutation(m){
       if(P.head){ P.head.scale.setScalar(0.3); setTimeout(()=>{ P.head.scale.setScalar(1); }, 600); }
       break;
   }
-  spawnBarrage(pick(['ABSURD!','WTF?!','I can\'t even','LMAO','VIBES','CHAOS','UNHINGED','ICONIC','Send it','Go off','No way','Slay']));
+  spawnBarrage(pick(BARRAGE_MSGS));
 }
 function t2Spin(head){
   let r = 0;
@@ -1159,7 +1471,7 @@ function triggerFrenzy(){
   showBigMeme('DARK FRENZY!');
   AudioEngine.boom(); AudioEngine.scream();
   spawnBarrage('💀 DARK FRENZY 💀');
-  for(let i=0;i<30;i++) setTimeout(()=>spawnBarrage(pick(['MAX ABSURDITY','Did you shake today?','No scores no levels just vibes','Meme overload','Weirdcore','ABSURD','WTF','LMAO','ICONIC','VIBES'])), i*100);
+  for(let i=0;i<30;i++) setTimeout(()=>spawnBarrage(pick(BARRAGE_MSGS)), i*100);
   // 场景变墓地
   scene.background = new THREE.Color(0x1a0510);
   scene.fog.color.set(0x2a0a1a);
@@ -1185,19 +1497,23 @@ function triggerFrenzy(){
     document.getElementById('stage').classList.remove('fisheye');
     scene.background = new THREE.Color(COLORS.bg);
     scene.fog.color.set(COLORS.fog);
-    ground.material.color.set(0xf5f5f0);
+    ground.material.color.set(COLORS.ground);
   }, 15000);
 }
 
 // ---------- 弹幕与大字梗 ----------
-const BARRAGE_MSGS = ['ABSURD!','WTF?!','I can\'t even','LMAO','VIBES','CHAOS','UNHINGED','ICONIC','Send it','Go off','No way','Slay','Did you shake today?','No scores no levels just vibes','666','OMG','LOL','So meme','Can\'t stop','Send help'];
+const BARRAGE_MSGS = [
+  '不给糖就捣蛋！','Trick or Treat!','今晚发疯到天亮','万圣节快乐','Booo!👻',
+  '舞王降临','魔性全开','跳到散！','Monster Mash!','Happy Halloween',
+  '南瓜灯亮了','幽灵伴舞','魔法爆炸','万圣狂欢夜','Spooky Scary',
+];
 function spawnBarrage(text){
   const el = document.createElement('div');
   el.className = 'barrage-item';
   el.textContent = text;
   el.style.top = rand(8,85)+'%';
   el.style.animationDuration = rand(4,8)+'s';
-  el.style.color = pick(['#ff00aa','#00ffcc','#ffcc00','#ff3344','#ffffff','#aaff00']);
+  el.style.color = pick(['#c8a030','#ff6600','#3a8c3a','#4a6fa5','#ffffff','#aa3030']);
   el.style.fontSize = rand(18,30)+'px';
   document.getElementById('barrage').appendChild(el);
   setTimeout(()=>el.remove(), 9000);
@@ -1215,13 +1531,17 @@ function showBigMeme(text){
 // ---------- 镜头震动 ----------
 let cameraShake = 0;
 function applyShake(){
+  // 电影感轻微摇摆作为基础位置
+  const tt = clock ? clock.elapsedTime : 0;
+  const baseX = Math.sin(tt*0.1)*0.3;
+  const baseY = 1.2 + Math.sin(tt*0.13)*0.12;
   if(cameraShake>0.01){
-    camera.position.x = rand(-cameraShake,cameraShake);
-    camera.position.y = 0.8 + rand(-cameraShake,cameraShake)*0.5;
+    camera.position.x = baseX + rand(-cameraShake,cameraShake);
+    camera.position.y = baseY + rand(-cameraShake,cameraShake)*0.5;
     cameraShake *= 0.9;
   } else {
-    camera.position.x = lerp(camera.position.x, 0, 0.1);
-    camera.position.y = lerp(camera.position.y, 0.8, 0.1);
+    camera.position.x = lerp(camera.position.x, baseX, 0.1);
+    camera.position.y = lerp(camera.position.y, baseY, 0.1);
   }
 }
 
@@ -1423,7 +1743,7 @@ function openShare(){
 function copyCode(){
   const code = window._challengeCode || document.getElementById('share-code').textContent;
   const ta = document.createElement('textarea');
-  ta.value = 'Monster Meme Ball challenge code: '+code+'\nDance the same absurd routine with me!';
+  ta.value = '万圣夜怪物狂欢曲挑战码: '+code+'\n同样的舞步，不同的怪物，一起发疯跳到散！';
   document.body.appendChild(ta); ta.select();
   try{ document.execCommand('copy'); showBigMeme('COPIED!'); }catch(e){ showBigMeme('Copy failed'); }
   document.body.removeChild(ta);
@@ -1475,14 +1795,56 @@ function animate(){
     AudioEngine.playBeat();
   }
 
-  // 飘雪下落
-  if(snow){
-    const pos = snow.geometry.attributes.position.array;
-    for(let i=0;i<pos.length;i+=3){
-      pos[i+1] -= dt*0.8;
-      if(pos[i+1] < -1.2){ pos[i+1] = 6; pos[i] = rand(-10,10); pos[i+2] = rand(-8,8); }
+  // 萤火虫 / 幽灵粒子（漂浮 + 脉动透明度）
+  if(fireflies){
+    const pos = fireflies.geometry.attributes.position.array;
+    for(let i=0;i<fireflyData.length;i++){
+      const d = fireflyData[i];
+      pos[i*3]   = d.x + Math.sin(t*d.sp+d.phase)*d.amp;
+      pos[i*3+1] = d.y + Math.cos(t*d.sp*0.7+d.phase)*d.amp*0.6;
+      pos[i*3+2] = d.z + Math.sin(t*d.sp*0.5+d.phase*1.3)*d.amp;
     }
-    snow.geometry.attributes.position.needsUpdate = true;
+    fireflies.geometry.attributes.position.needsUpdate = true;
+    fireflies.material.opacity = 0.6 + Math.sin(t*1.5)*0.25;
+  }
+  // 飘落枯叶（下落 + 漂移 + 旋转）
+  if(leaves){
+    const pos = leaves.geometry.attributes.position.array;
+    for(let i=0;i<leafData.length;i++){
+      const d = leafData[i];
+      pos[i*3]   += d.vx*dt;
+      pos[i*3+1] -= dt*0.6;
+      d.rot += d.vr*dt;
+      if(pos[i*3+1] < -1.2){ pos[i*3+1] = 6; pos[i*3] = rand(-9,9); pos[i*3+2] = rand(-7,5); }
+      if(pos[i*3] < -10) pos[i*3]=10; if(pos[i*3] > 10) pos[i*3]=-10;
+    }
+    leaves.geometry.attributes.position.needsUpdate = true;
+  }
+  // 蝙蝠群飞行（环形 / 随机轨迹 + 上下扑动）
+  if(bats){
+    batsArr.forEach(b=>{
+      const a = b.ph + t*b.sp;
+      b.mesh.position.x = b.cx + Math.cos(a)*b.rad;
+      b.mesh.position.z = b.cz + Math.sin(a)*b.rad;
+      b.mesh.position.y = b.cy + Math.sin(t*b.yp+b.ph)*0.5;
+      b.mesh.rotation.y = -a + Math.PI/2;
+      b.mesh.rotation.z = Math.sin(t*8+b.ph)*0.4; // 扑翅
+    });
+  }
+  // 坩埚冒泡（绿色小球上升后消失）
+  for(let c=0;c<bubblesArr.length;c++){
+    const bubs = bubblesArr[c];
+    bubs.forEach(b=>{
+      const cyc = (t*b.sp + b.phase) % 1;
+      b.mesh.position.y = cyc*0.5;
+      b.mesh.scale.setScalar(1 - cyc);
+      b.mesh.material.opacity = 0.8 * (1 - cyc);
+      b.mesh.visible = cyc < 0.95;
+    });
+  }
+  // 南瓜灯光闪烁
+  for(let i=0;i<pumpkinLights.length;i++){
+    pumpkinLights[i].intensity = 0.5 + Math.sin(t*7+i*1.7)*0.2 + Math.sin(t*23+i)*0.08;
   }
 
   // 动作切换
@@ -1519,8 +1881,8 @@ function startGame(){
   // 自动开启背景音乐
   setTimeout(()=>{ AudioEngine.startBGM(); document.getElementById('btn-bgm').textContent='🎶'; }, 300);
   // 开场欢迎
-  setTimeout(()=>{ showBigMeme('Did you shake today?'); }, 500);
-  setTimeout(()=>{ spawnBarrage('No scores no levels just vibes'); }, 1000);
+  setTimeout(()=>{ showBigMeme('万圣狂欢夜！'); }, 500);
+  setTimeout(()=>{ spawnBarrage('不给糖就捣蛋！'); }, 1000);
 }
 
 // 暴露到全局便于调试

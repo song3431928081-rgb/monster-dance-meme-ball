@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>万圣夜：怪物狂欢曲 Halloween Meme Mash</title>
+<title>HALLOWEEN: Monster Mash</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
   html, body { width:100%; height:100%; overflow:hidden; background:#0a0612; font-family:"Segoe UI","Microsoft YaHei",sans-serif; touch-action:none; }
   #game-canvas { display:block; width:100%; height:100%; touch-action:none; }
 
-  /* 弹幕 */
+  /* Barrage */
   #barrage { position:absolute; inset:0; pointer-events:none; z-index:20; overflow:hidden; }
   .barrage-item { position:absolute; white-space:nowrap; font-weight:900; font-size:20px; color:#fff;
     text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 0 0 8px #ff6600; animation: bslide linear forwards; }
   @keyframes bslide { from { transform:translateX(110vw);} to { transform:translateX(-110vw);} }
 
-  /* 大字 */
+  /* Big meme */
   #bigmeme { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     pointer-events:none; z-index:25; opacity:0; }
   #bigmeme span { font-size:clamp(36px,12vw,100px); font-weight:900; color:#c8a030;
     text-shadow: 3px 3px 0 #000, -2px -2px 0 #ff6600, 0 0 25px #c8a030; transform:rotate(-6deg); }
 
-  /* 疯狂值条 */
+  /* Madness meter */
   #meter-wrap { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:30;
     width:55%; max-width:260px; height:12px; background:rgba(0,0,0,0.6); border:2px solid #c8a030;
     border-radius:10px; overflow:hidden; box-shadow:0 0 10px #c8a030; }
@@ -45,7 +45,7 @@
   #bottom-left { bottom:calc(16px + env(safe-area-inset-bottom)); left:12px; }
   #bottom-right { bottom:calc(16px + env(safe-area-inset-bottom)); right:12px; }
 
-  /* 开始界面 */
+  /* Start screen */
   #start-screen { position:absolute; inset:0; z-index:100; display:flex; flex-direction:column;
     align-items:center; justify-content:center; background:radial-gradient(circle at 50% 40%, #2a1a0a 0%, #05020a 80%);
     padding:20px; text-align:center; }
@@ -60,13 +60,13 @@
   @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
   .hint { font-size:11px; color:#888; margin-top:16px; max-width:280px; line-height:1.6; }
 
-  /* 录制指示 */
+  /* Recording indicator */
   #rec-indicator { position:absolute; top:48px; left:50%; transform:translateX(-50%); z-index:35;
     display:none; align-items:center; gap:5px; color:#ff3344; font-weight:bold; font-size:12px; text-shadow:1px 1px 0 #000; }
   #rec-dot { width:10px; height:10px; background:#ff3344; border-radius:50%; animation: blink 0.8s infinite; }
   @keyframes blink { 50%{opacity:0.3;} }
 
-  /* 分享弹窗 */
+  /* Share modal */
   #share-modal { position:absolute; inset:0; z-index:200; display:none; align-items:center; justify-content:center;
     background:rgba(0,0,0,0.85); padding:20px; }
   #share-box { background:#1a0a2a; border:2px solid #c8a030; border-radius:16px; padding:22px; max-width:320px; width:100%;
@@ -78,7 +78,7 @@
     background:linear-gradient(135deg,#ff6600,#c8a030); border:none; border-radius:18px; cursor:pointer; }
   #close-share { background:#444; }
 
-  /* 横屏提示 */
+  /* Rotate hint */
   #rotate-hint { display:none; position:absolute; inset:0; z-index:300; background:#000; color:#c8a030;
     align-items:center; justify-content:center; flex-direction:column; font-size:16px; text-align:center; padding:30px; }
   @media (orientation:landscape) and (max-height:500px) { #rotate-hint { display:flex; } }
@@ -87,49 +87,49 @@
 <body>
 <canvas id="game-canvas"></canvas>
 
-<div id="meter-wrap"><div id="meter-label">🎃 疯狂值 MADNESS</div><div id="meter-fill"></div></div>
+<div id="meter-wrap"><div id="meter-label">🎃 MADNESS</div><div id="meter-fill"></div></div>
 <div id="rec-indicator"><div id="rec-dot"></div> REC...</div>
 <div id="barrage"></div>
 <div id="bigmeme"><span id="bigmeme-text"></span></div>
 
 <div id="ui">
-  <div id="top-left" class="btn-row"><button class="btn" id="btn-mute" title="静音">🔇</button></div>
-  <div id="top-right" class="btn-row"><button class="btn" id="btn-frenzy" title="暴走">💀</button></div>
-  <div id="bottom-left" class="btn-row"><button class="btn" id="btn-change" title="换角色">🔄</button></div>
-  <div id="bottom-right" class="btn-row"><button class="btn" id="btn-share" title="分享">📤</button></div>
+  <div id="top-left" class="btn-row"><button class="btn" id="btn-mute" title="Mute">🔇</button></div>
+  <div id="top-right" class="btn-row"><button class="btn" id="btn-frenzy" title="Frenzy">💀</button></div>
+  <div id="bottom-left" class="btn-row"><button class="btn" id="btn-change" title="Swap">🔄</button></div>
+  <div id="bottom-right" class="btn-row"><button class="btn" id="btn-share" title="Share">📤</button></div>
 </div>
 
 <div id="start-screen">
-  <h1>万圣夜<br>怪物狂欢曲</h1>
-  <div class="sub">🎃 抽象魔性解压派对 🦇</div>
-  <div class="slogan">万圣节不捣蛋，<br>今晚一起发疯跳到散。</div>
-  <button id="start-btn">进入狂欢 ▶</button>
-  <div class="hint">📱 戳他/拖他/长按/连点/双指<br>⌨️ 空格=抽搐 · 方向键=甩 · M=静音 · F=暴走</div>
+  <h1>HALLOWEEN<br>MONSTER MASH</h1>
+  <div class="sub">🎃 Abstract Meme Decompression Party 🦇</div>
+  <div class="slogan">No tricks, just treats.<br>Tonight we go insane until we fall apart.</div>
+  <button id="start-btn">ENTER MADNESS ▶</button>
+  <div class="hint">📱 Tap / Drag / Hold / Multi-tap / Pinch / Shake<br>⌨️ Space=twitch · Arrows=fling · M=mute · F=frenzy</div>
 </div>
 
 <div id="share-modal">
   <div id="share-box">
-    <h3>📤 分享你的狂欢</h3>
-    <div style="color:#888;font-size:12px;">挑战码（同角色不同起舞）</div>
+    <h3>📤 Share Your Madness</h3>
+    <div style="color:#888;font-size:12px;">Challenge code (same dance, different monster)</div>
     <div id="share-code">------</div>
-    <button class="share-btn" id="copy-code">📋 复制码</button>
-    <button class="share-btn" id="gen-gif">📸 截图保存</button>
-    <button class="share-btn" id="close-share">关闭</button>
-    <div style="color:#555;font-size:10px;margin-top:10px;">截图分享到抖音/TikTok/B站</div>
+    <button class="share-btn" id="copy-code">📋 Copy Code</button>
+    <button class="share-btn" id="gen-gif">📸 Save Snapshot</button>
+    <button class="share-btn" id="close-share">Close</button>
+    <div style="color:#555;font-size:10px;margin-top:10px;">Screenshot to share on TikTok / YouTube / Bilibili</div>
   </div>
 </div>
 
-<div id="rotate-hint"><div style="font-size:40px;">📱↻</div><div style="margin-top:12px;">竖屏体验更佳</div></div>
+<div id="rotate-hint"><div style="font-size:40px;">📱↻</div><div style="margin-top:12px;">Rotate to portrait for best experience</div></div>
 
 <script>
 /* ============================================================
-   万圣夜：怪物狂欢曲 — 2D Meme Edition
-   Canvas 2D + Web Audio API | 表情包贴纸风
+   HALLOWEEN: Monster Mash — 2D Meme Edition
+   Canvas 2D + Web Audio API | Sticker Meme Style
    ============================================================ */
 (function(){
 'use strict';
 
-// ========== 工具 ==========
+// ========== Utils ==========
 const TAU = Math.PI * 2;
 const rand = (a, b) => a + Math.random() * (b - a);
 const randi = (a, b) => Math.floor(rand(a, b + 1));
@@ -142,17 +142,23 @@ const ease = t => t * t * (3 - 2 * t);
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 let W = 0, H = 0, DPR = 1;
+let bgGrad = null;
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
   W = window.innerWidth; H = window.innerHeight;
   canvas.width = W * DPR; canvas.height = H * DPR;
   canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  // Cache background gradient
+  bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, '#0a0612');
+  bgGrad.addColorStop(0.5, '#1a0a2a');
+  bgGrad.addColorStop(1, '#2a1a0a');
 }
 window.addEventListener('resize', resize);
 resize();
 
-// ========== 音频引擎 ==========
+// ========== Audio Engine ==========
 const AudioEngine = {
   ctx: null, bpm: 128, muted: false, bgmPlaying: false,
   masterGain: null, bgmTimer: null, bgmStep: 0,
@@ -168,7 +174,7 @@ const AudioEngine = {
     this.muted = m;
     if (this.masterGain) this.masterGain.gain.value = m ? 0 : 0.4;
   },
-  // 骨头敲击
+  // Bone knock
   boneKnock() {
     if (!this.ctx || this.muted) return;
     const t = this.ctx.currentTime;
@@ -181,7 +187,7 @@ const AudioEngine = {
     osc.connect(gain).connect(this.masterGain);
     osc.start(t); osc.stop(t + 0.12);
   },
-  // 鬼叫/whoosh
+  // Ghost whisper/whoosh
   ghostWhisper() {
     if (!this.ctx || this.muted) return;
     const t = this.ctx.currentTime;
@@ -199,7 +205,7 @@ const AudioEngine = {
     noise.connect(filter).connect(gain).connect(this.masterGain);
     noise.start(t); noise.stop(t + 0.5);
   },
-  // 南瓜pop
+  // Pumpkin pop
   pumpkinPop() {
     if (!this.ctx || this.muted) return;
     const t = this.ctx.currentTime;
@@ -212,7 +218,7 @@ const AudioEngine = {
     osc.connect(gain).connect(this.masterGain);
     osc.start(t); osc.stop(t + 0.15);
   },
-  // 抽搐音
+  // Twitch sound
   twitch() {
     if (!this.ctx || this.muted) return;
     const t = this.ctx.currentTime;
@@ -227,7 +233,7 @@ const AudioEngine = {
       osc.start(st); osc.stop(st + 0.06);
     }
   },
-  // 爆炸音
+  // Explosion sound
   explosion() {
     if (!this.ctx || this.muted) return;
     const t = this.ctx.currentTime;
@@ -243,7 +249,7 @@ const AudioEngine = {
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
     noise.connect(filter).connect(gain).connect(this.masterGain);
     noise.start(t); noise.stop(t + 0.8);
-    // 低音
+    // Bass
     const osc = this.ctx.createOscillator();
     const og = this.ctx.createGain();
     osc.type = 'sine'; osc.frequency.setValueAtTime(100, t);
@@ -253,7 +259,7 @@ const AudioEngine = {
     osc.connect(og).connect(this.masterGain);
     osc.start(t); osc.stop(t + 0.5);
   },
-  // 节拍
+  // Beat
   beat() { this.boneKnock(); },
   // BGM
   startBGM() {
@@ -292,53 +298,53 @@ const AudioEngine = {
   }
 };
 
-// ========== 角色：表情包贴纸风格 ==========
+// ========== Characters: sticker meme style ==========
 const CHARACTERS = [
-  { id: 'pumpkin', name: '南瓜头', emoji: '🎃' },
-  { id: 'ghost',   name: '幽灵鬼', emoji: '👻' },
-  { id: 'vampire', name: '吸血鬼', emoji: '🧛' },
-  { id: 'frank',   name: '科学怪人', emoji: '🧟' },
-  { id: 'witch',   name: '黑魔女', emoji: '🧙' },
-  { id: 'bat',     name: '蝙蝠精', emoji: '🦇' },
-  { id: 'mummy',   name: '木乃伊', emoji: '🤕' },
-  { id: 'cat',     name: '黑猫妖', emoji: '🐱' },
+  { id: 'pumpkin', name: 'PUMPKIN', emoji: '🎃' },
+  { id: 'ghost',   name: 'GHOST', emoji: '👻' },
+  { id: 'vampire', name: 'DRACULA', emoji: '🧛' },
+  { id: 'frank',   name: 'FRANK', emoji: '🧟' },
+  { id: 'witch',   name: 'WITCH', emoji: '🧙' },
+  { id: 'bat',     name: 'BAT', emoji: '🦇' },
+  { id: 'mummy',   name: 'MUMMY', emoji: '🤕' },
+  { id: 'cat',     name: 'CAT', emoji: '🐱' },
 ];
 let currentCharIdx = 0;
 
-// 角色绘制函数 —— 表情包风格：大脸+夸张五官+简单四肢
+// Character draw functions — sticker style: big face + exaggerated features
 const CharDraw = {
   pumpkin(ctx, t, parts) {
-    // 南瓜头：橙色椭圆脸 + 雕刻三角眼 + 锯齿嘴
+    // Pumpkin: orange ellipse face + carved triangle eyes + jagged mouth
     ctx.fillStyle = '#ff7700';
     ctx.beginPath(); ctx.ellipse(0, 0, 80, 70, 0, 0, TAU); ctx.fill();
-    // 南瓜棱
+    // Pumpkin ridges
     ctx.strokeStyle = '#cc5500'; ctx.lineWidth = 3;
     for (let i = 0; i < 6; i++) {
       ctx.beginPath();
       ctx.ellipse(0, 0, 80 - i * 2, 70 - i * 2, 0, -0.3, 0.3);
       ctx.stroke();
     }
-    // 茎
+    // Stem
     ctx.fillStyle = '#335522';
     ctx.fillRect(-8, -85, 16, 20);
-    // 三角眼（发光）
+    // Triangle eyes (glowing)
     ctx.fillStyle = '#fff800';
     ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 15;
     ctx.beginPath(); ctx.moveTo(-35, -15); ctx.lineTo(-15, -15); ctx.lineTo(-25, 5); ctx.fill();
     ctx.beginPath(); ctx.moveTo(15, -15); ctx.lineTo(35, -15); ctx.lineTo(25, 5); ctx.fill();
     ctx.shadowBlur = 0;
-    // 瞳孔（跟随动作）
+    // Pupils (follow action)
     ctx.fillStyle = '#000';
     const px = parts.pupilX || 0, py = parts.pupilY || 0;
     ctx.beginPath(); ctx.arc(-25 + px, -8 + py, 4, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(25 + px, -8 + py, 4, 0, TAU); ctx.fill();
-    // 锯齿嘴
+    // Jagged mouth
     ctx.fillStyle = '#000';
     ctx.beginPath();
     ctx.moveTo(-30, 25);
     for (let i = 0; i <= 6; i++) { ctx.lineTo(-30 + i * 10, 25 + (i % 2 ? 12 : 0)); }
     ctx.lineTo(30, 25); ctx.closePath(); ctx.fill();
-    // 舌头
+    // Tongue
     if (parts.tongue > 0.1) {
       ctx.fillStyle = '#ff3366';
       ctx.beginPath(); ctx.ellipse(0, 35 + parts.tongue * 15, 10, 15 * parts.tongue, 0, 0, TAU); ctx.fill();
@@ -346,13 +352,13 @@ const CharDraw = {
   },
 
   ghost(ctx, t, parts) {
-    // 幽灵：白色半透明体 + 波浪底部 + 大黑眼
+    // Ghost: white translucent body + wavy bottom + big black eyes
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
     ctx.shadowColor = '#4a6fa5'; ctx.shadowBlur = 20;
     ctx.beginPath();
     ctx.arc(0, -10, 65, Math.PI, 0);
     ctx.lineTo(65, 50);
-    // 波浪底
+    // Wavy bottom
     for (let i = 5; i >= 0; i--) {
       const x = -65 + i * 26;
       ctx.quadraticCurveTo(x + 13, 65, x, 50);
@@ -360,48 +366,48 @@ const CharDraw = {
     ctx.lineTo(-65, -10);
     ctx.closePath(); ctx.fill();
     ctx.shadowBlur = 0;
-    // 大黑眼
+    // Big black eyes
     ctx.fillStyle = '#000';
     const px = parts.pupilX * 1.5 || 0, py = parts.pupilY * 1.5 || 0;
     ctx.beginPath(); ctx.ellipse(-22 + px, -20 + py, 12, 16, 0, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.ellipse(22 + px, -20 + py, 12, 16, 0, 0, TAU); ctx.fill();
-    // 白色高光
+    // White highlights
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.arc(-19 + px, -25 + py, 4, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(25 + px, -25 + py, 4, 0, TAU); ctx.fill();
-    // 嘴 O 形
+    // Mouth O shape
     ctx.fillStyle = '#000';
     ctx.beginPath(); ctx.ellipse(0, 15, 12, 15 + parts.mouthOpen * 10, 0, 0, TAU); ctx.fill();
   },
 
   vampire(ctx, t, parts) {
-    // 吸血鬼：苍白脸 + 黑眼圈 + 红眼 + 尖牙 + 黑披风
-    // 披风
+    // Vampire: pale face + dark circles + red eyes + fangs + black cape
+    // Cape
     ctx.fillStyle = '#1a0011';
     ctx.beginPath();
     ctx.moveTo(-75, -30); ctx.lineTo(-90, 60); ctx.lineTo(90, 60); ctx.lineTo(75, -30);
     ctx.quadraticCurveTo(0, -70, -75, -30); ctx.fill();
-    // 脸
+    // Face
     ctx.fillStyle = '#e8ddcc';
     ctx.beginPath(); ctx.ellipse(0, -5, 55, 65, 0, 0, TAU); ctx.fill();
-    // 头发
+    // Hair
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath(); ctx.ellipse(0, -50, 55, 35, 0, 0, Math.PI); ctx.fill();
-    // 黑眼圈
+    // Dark circles
     ctx.fillStyle = 'rgba(100,40,40,0.5)';
     ctx.beginPath(); ctx.ellipse(-22, -10, 18, 12, 0, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.ellipse(22, -10, 18, 12, 0, 0, TAU); ctx.fill();
-    // 红眼
+    // Red eyes
     ctx.fillStyle = '#ff0000'; ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 10;
     const px = parts.pupilX || 0, py = parts.pupilY || 0;
     ctx.beginPath(); ctx.arc(-22 + px, -10 + py, 7, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(22 + px, -10 + py, 7, 0, TAU); ctx.fill();
     ctx.shadowBlur = 0;
-    // 尖牙
+    // Fangs
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.moveTo(-8, 20); ctx.lineTo(-4, 35); ctx.lineTo(0, 20); ctx.fill();
     ctx.beginPath(); ctx.moveTo(0, 20); ctx.lineTo(4, 35); ctx.lineTo(8, 20); ctx.fill();
-    // 嘴
+    // Mouth
     if (parts.mouthOpen > 0.1) {
       ctx.fillStyle = '#440011';
       ctx.beginPath(); ctx.ellipse(0, 22, 15, 8 * parts.mouthOpen, 0, 0, TAU); ctx.fill();
@@ -409,25 +415,25 @@ const CharDraw = {
   },
 
   frank(ctx, t, parts) {
-    // 科学怪人：绿色方头 + 螺丝 + 平顶头 + 缝线
+    // Frankenstein: green square head + bolts + flat top + stitches
     ctx.fillStyle = '#55aa44';
     ctx.fillRect(-50, -60, 100, 110);
-    // 平顶
+    // Flat top
     ctx.fillStyle = '#449933';
     ctx.fillRect(-55, -65, 110, 15);
-    // 螺丝
+    // Bolts
     ctx.fillStyle = '#888';
     ctx.beginPath(); ctx.arc(-50, 0, 6, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(50, 0, 6, 0, TAU); ctx.fill();
-    // 螺丝纹
+    // Bolt pattern
     ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(-54, 0); ctx.lineTo(-46, 0); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(46, 0); ctx.lineTo(54, 0); ctx.stroke();
-    // 缝线
+    // Stitches
     ctx.strokeStyle = '#224'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(-15, -50); ctx.lineTo(-15, -20); ctx.stroke();
     for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(-20, -45 + i * 8); ctx.lineTo(-10, -45 + i * 8); ctx.stroke(); }
-    // 眼
+    // Eyes
     ctx.fillStyle = '#fff';
     const px = parts.pupilX || 0, py = parts.pupilY || 0;
     ctx.beginPath(); ctx.arc(-22, -10, 12, 0, TAU); ctx.fill();
@@ -435,29 +441,29 @@ const CharDraw = {
     ctx.fillStyle = '#000';
     ctx.beginPath(); ctx.arc(-22 + px, -10 + py, 5, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(22 + px, -10 + py, 5, 0, TAU); ctx.fill();
-    // 嘴
+    // Mouth
     ctx.strokeStyle = '#224'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(-20, 25); ctx.lineTo(20, 25); ctx.stroke();
     for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(-20 + i * 10, 22); ctx.lineTo(-20 + i * 10, 28); ctx.stroke(); }
-    // 眉
+    // Brows
     ctx.fillStyle = '#224';
     ctx.fillRect(-32, -28, 20, 5); ctx.fillRect(12, -28, 20, 5);
   },
 
   witch(ctx, t, parts) {
-    // 黑魔女：绿脸 + 尖帽 + 黑眼 + 角
-    // 帽
+    // Dark witch: green face + pointed hat + black eyes + horns
+    // Hat
     ctx.fillStyle = '#1a0a2a';
     ctx.beginPath(); ctx.moveTo(-50, -55); ctx.lineTo(50, -55); ctx.lineTo(10, -120); ctx.fill();
     ctx.beginPath(); ctx.ellipse(0, -55, 65, 12, 0, 0, TAU); ctx.fill();
-    // 绿脸
+    // Green face
     ctx.fillStyle = '#88bb44';
     ctx.beginPath(); ctx.ellipse(0, 0, 50, 58, 0, 0, TAU); ctx.fill();
-    // 角
+    // Horns
     ctx.fillStyle = '#1a0a2a';
     ctx.beginPath(); ctx.moveTo(-40, -30); ctx.lineTo(-50, -60); ctx.lineTo(-30, -35); ctx.fill();
     ctx.beginPath(); ctx.moveTo(40, -30); ctx.lineTo(50, -60); ctx.lineTo(30, -35); ctx.fill();
-    // 眼
+    // Eyes
     ctx.fillStyle = '#000';
     const px = parts.pupilX * 1.5 || 0, py = parts.pupilY * 1.5 || 0;
     ctx.beginPath(); ctx.ellipse(-18 + px, -5 + py, 10, 14, 0, 0, TAU); ctx.fill();
@@ -466,12 +472,12 @@ const CharDraw = {
     ctx.beginPath(); ctx.arc(-18 + px, -5 + py, 3, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(18 + px, -5 + py, 3, 0, TAU); ctx.fill();
     ctx.shadowBlur = 0;
-    // 邪笑
+    // Wicked smile
     ctx.strokeStyle = '#1a0a2a'; ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(-20, 30); ctx.quadraticCurveTo(0, 45 + parts.mouthOpen * 15, 20, 30);
     ctx.stroke();
-    // 舌
+    // Tongue
     if (parts.tongue > 0.1) {
       ctx.fillStyle = '#cc3366';
       ctx.beginPath(); ctx.ellipse(0, 40, 8, 12 * parts.tongue, 0, 0, TAU); ctx.fill();
@@ -479,9 +485,9 @@ const CharDraw = {
   },
 
   bat(ctx, t, parts) {
-    // 蝙蝠精：黑色身体 + 大翅膀 + 红眼 + 尖耳
+    // Bat spirit: black body + big wings + red eyes + pointed ears
     ctx.fillStyle = '#1a0011';
-    // 翅膀（随拍打）
+    // Wings (flapping)
     const wingFlap = Math.sin(t * 8) * 0.3;
     ctx.beginPath();
     ctx.moveTo(0, -10);
@@ -493,26 +499,26 @@ const CharDraw = {
     ctx.quadraticCurveTo(60, -30 + wingFlap * 40, 80, 20);
     ctx.quadraticCurveTo(40, 10, 0, 20);
     ctx.fill();
-    // 身体
+    // Body
     ctx.beginPath(); ctx.ellipse(0, 0, 25, 35, 0, 0, TAU); ctx.fill();
-    // 耳
+    // Ears
     ctx.beginPath(); ctx.moveTo(-15, -25); ctx.lineTo(-20, -45); ctx.lineTo(-5, -25); ctx.fill();
     ctx.beginPath(); ctx.moveTo(15, -25); ctx.lineTo(20, -45); ctx.lineTo(5, -25); ctx.fill();
-    // 红眼
+    // Red eyes
     ctx.fillStyle = '#ff0000'; ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 10;
     ctx.beginPath(); ctx.arc(-10, -8, 5, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(10, -8, 5, 0, TAU); ctx.fill();
     ctx.shadowBlur = 0;
-    // 尖牙
+    // Fangs
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.moveTo(-3, 10); ctx.lineTo(0, 20); ctx.lineTo(3, 10); ctx.fill();
   },
 
   mummy(ctx, t, parts) {
-    // 木乃伊：绷带缠绕 + 露出眼睛
+    // Mummy: bandage wrapping + exposed eyes
     ctx.fillStyle = '#e8dcc0';
     ctx.beginPath(); ctx.ellipse(0, 0, 55, 65, 0, 0, TAU); ctx.fill();
-    // 绷带条
+    // Bandage strips
     ctx.strokeStyle = '#c8b890'; ctx.lineWidth = 6;
     for (let i = -5; i <= 5; i++) {
       ctx.beginPath();
@@ -520,17 +526,17 @@ const CharDraw = {
       ctx.quadraticCurveTo(0, i * 12 + 5, 55, i * 12);
       ctx.stroke();
     }
-    // 露眼缝隙
+    // Eye gaps
     ctx.fillStyle = '#000';
     const px = parts.pupilX || 0;
     ctx.beginPath(); ctx.ellipse(-20, -10 + (parts.pupilY || 0), 8, 5, 0, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.ellipse(20, -10 + (parts.pupilY || 0), 8, 5, 0, 0, TAU); ctx.fill();
-    // 发光
+    // Glow
     ctx.fillStyle = '#88cc44'; ctx.shadowColor = '#88cc44'; ctx.shadowBlur = 8;
     ctx.beginPath(); ctx.arc(-20 + px, -10, 3, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(20 + px, -10, 3, 0, TAU); ctx.fill();
     ctx.shadowBlur = 0;
-    // 嘴缝
+    // Mouth slit
     if (parts.mouthOpen > 0.1) {
       ctx.fillStyle = '#000';
       ctx.beginPath(); ctx.ellipse(0, 25, 15, 6 * parts.mouthOpen, 0, 0, TAU); ctx.fill();
@@ -538,30 +544,30 @@ const CharDraw = {
   },
 
   cat(ctx, t, parts) {
-    // 黑猫妖：猫头 + 尖耳 + 绿眼 + 诡笑
+    // Black cat demon: cat head + pointed ears + green eyes + wicked smile
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath(); ctx.ellipse(0, 0, 55, 50, 0, 0, TAU); ctx.fill();
-    // 耳
+    // Ears
     ctx.beginPath(); ctx.moveTo(-40, -30); ctx.lineTo(-45, -60); ctx.lineTo(-20, -35); ctx.fill();
     ctx.beginPath(); ctx.moveTo(40, -30); ctx.lineTo(45, -60); ctx.lineTo(20, -35); ctx.fill();
-    // 耳内
+    // Inner ears
     ctx.fillStyle = '#ff6600';
     ctx.beginPath(); ctx.moveTo(-38, -35); ctx.lineTo(-40, -52); ctx.lineTo(-25, -38); ctx.fill();
     ctx.beginPath(); ctx.moveTo(38, -35); ctx.lineTo(40, -52); ctx.lineTo(25, -38); ctx.fill();
-    // 绿眼
+    // Green eyes
     ctx.fillStyle = '#3aff3a'; ctx.shadowColor = '#3aff3a'; ctx.shadowBlur = 12;
     const px = parts.pupilX || 0, py = parts.pupilY || 0;
     ctx.beginPath(); ctx.ellipse(-18 + px, -5 + py, 14, 18, 0, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.ellipse(18 + px, -5 + py, 14, 18, 0, 0, TAU); ctx.fill();
     ctx.shadowBlur = 0;
-    // 瞳孔（竖瞳）
+    // Pupils (vertical slits)
     ctx.fillStyle = '#000';
     ctx.beginPath(); ctx.ellipse(-18 + px, -5 + py, 3, 14, 0, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.ellipse(18 + px, -5 + py, 3, 14, 0, 0, TAU); ctx.fill();
-    // 鼻
+    // Nose
     ctx.fillStyle = '#ff6600';
     ctx.beginPath(); ctx.moveTo(-5, 12); ctx.lineTo(5, 12); ctx.lineTo(0, 18); ctx.fill();
-    // 诡笑 + 胡须
+    // Wicked smile + whiskers
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(-15, 22); ctx.quadraticCurveTo(0, 30 + parts.mouthOpen * 10, 15, 22);
@@ -573,7 +579,7 @@ const CharDraw = {
   },
 };
 
-// ========== 舞蹈动作 ==========
+// ========== Dance Moves ==========
 const MOVES = ['idle', 'twitch', 'wiggle', 'spin', 'bounce', 'shake', 'flip', 'wobble', 'stretch', 'spaz', 'jelly', 'breakdance', 'headspin', 'inflate', 'dab'];
 let currentMove = 'idle';
 let moveTime = 0, moveDuration = 2;
@@ -581,10 +587,11 @@ let moveTime = 0, moveDuration = 2;
 function setMove(m) { currentMove = m; moveTime = 0; moveDuration = rand(0.8, 2.2); }
 function randomMove() { setMove(pick(MOVES)); }
 
-// ========== 混乱系统：随机魔性事件 ==========
+// ========== Chaos System: random meme events ==========
 const CHAOS_EVENTS = [
   'glitch', 'rainbow', 'shake_screen', 'flash', 'clone_burst', 'emoji_burst',
   'color_invert', 'warp', 'teleport', 'face_swap', 'rain_money', 'ghost_army',
+  'confetti', 'laser_eyes', 'hypno', 'zoom_punch', 'rgb_split', 'vortex',
 ];
 let chaosTimer = 0;
 let screenShake = 0, screenShakeX = 0, screenShakeY = 0;
@@ -593,48 +600,53 @@ let rainbowAmount = 0;
 let flashAmount = 0;
 let invertAmount = 0;
 let warpAmount = 0;
+let hypnoAmount = 0;
+let zoomPunch = 0;
+let vortexAmount = 0;
+let rgbSplitAmount = 0;
+let confettiActive = false;
 
 function triggerChaos() {
   const event = pick(CHAOS_EVENTS);
   switch (event) {
     case 'glitch':
       glitchAmount = 1;
-      showBigMeme(pick(['⚠️ GLITCH ⚠️', '系统错误', '00000', '???']));
+      showBigMeme(pick(['⚠️ GLITCH ⚠️', 'SYSTEM ERROR', '00000', '???']));
       break;
     case 'rainbow':
       rainbowAmount = 3;
-      showBigMeme('🌈 彩虹暴走！');
+      showBigMeme('🌈 RAINBOW FRENZY!');
       break;
     case 'shake_screen':
       screenShake = 1;
-      showBigMeme('震 动！');
+      showBigMeme('EARTHQUAKE!');
       break;
     case 'flash':
       flashAmount = 1;
-      showBigMeme('闪 ！');
+      showBigMeme('BLINDED!');
       break;
     case 'clone_burst':
       for (let i = 0; i < 5; i++) spawnParticles(character.x + rand(-50, 50), character.y + rand(-50, 50), 3, pick(['#ff6600', '#c8a030', '#3a8c3a', '#ff0000', '#00ffff']));
-      showBigMeme('分身术！');
-      spawnBarrage('影分身之术');
+      showBigMeme('CLONES!');
+      spawnBarrage('SHADOW CLONE JUTSU');
       break;
     case 'emoji_burst':
       for (let i = 0; i < 8; i++) spawnBarrage(pick(['🎃', '👻', '🦇', '💀', '🕷️', '🧙', '🦴', '🍬']));
-      showBigMeme('Emoji 暴 风！');
+      showBigMeme('EMJI STORM!');
       break;
     case 'color_invert':
       invertAmount = 1;
-      showBigMeme('反 转！');
+      showBigMeme('INVERTED!');
       break;
     case 'warp':
       warpAmount = 2;
-      showBigMeme('扭 曲！');
+      showBigMeme('WARPED!');
       break;
     case 'teleport':
       character.x = rand(100, W - 100);
       character.y = rand(100, H - 200);
       spawnParticles(character.x, character.y, 20);
-      showBigMeme('瞬 移！');
+      showBigMeme('TELEPORT!');
       break;
     case 'face_swap':
       const oldIdx = currentCharIdx;
@@ -642,28 +654,70 @@ function triggerChaos() {
       character.type = CHARACTERS[currentCharIdx].id;
       character.name = CHARACTERS[currentCharIdx].name;
       spawnParticles(character.x, character.y, 25);
-      showBigMeme('变脸！');
+      showBigMeme('FACE SWAP!');
       AudioEngine.ghostWhisper();
       break;
     case 'rain_money':
       for (let i = 0; i < 20; i++) {
         spawnParticles(rand(0, W), -20, 1, '#c8a030');
       }
-      showBigMeme('下 钱 了！');
+      showBigMeme('MAKE IT RAIN!');
       spawnBarrage('💰💰💰');
       break;
     case 'ghost_army':
       for (let i = 0; i < 10; i++) {
         spawnParticles(rand(50, W - 50), rand(50, H - 100), 2, 'rgba(255,255,255,0.6)');
       }
-      showBigMeme('👻 幽灵大军！');
+      showBigMeme('👻 GHOST ARMY!');
       spawnBarrage('Booooo!');
+      break;
+    case 'confetti':
+      for (let i = 0; i < 40; i++) {
+        particles.push({
+          x: rand(0, W), y: -20,
+          vx: rand(-100, 100), vy: rand(50, 200),
+          life: rand(2, 4), maxLife: 4,
+          color: pick(['#ff6600', '#c8a030', '#3a8c3a', '#ff0000', '#00ffff', '#ff00ff', '#ffff00']),
+          size: rand(4, 10),
+          gravity: 100,
+          shape: 'rect',
+          rot: rand(0, TAU), rotV: rand(-5, 5),
+        });
+      }
+      showBigMeme('CONFETTI!');
+      break;
+    case 'laser_eyes':
+      spawnParticles(character.x - 80, character.y - 20, 15, '#ff0000');
+      spawnParticles(character.x + 80, character.y - 20, 15, '#ff0000');
+      flashAmount = 0.6;
+      showBigMeme('PIUUUU!');
+      spawnBarrage('LASER EYES');
+      break;
+    case 'hypno':
+      hypnoAmount = 3;
+      showBigMeme('SLEEPY...');
+      spawnBarrage('LOOK INTO MY EYES');
+      break;
+    case 'zoom_punch':
+      zoomPunch = 1;
+      showBigMeme('ZOOM PUNCH!');
+      screenShake = 0.8;
+      break;
+    case 'rgb_split':
+      rgbSplitAmount = 2;
+      glitchAmount = 0.5;
+      showBigMeme('RGB SPLIT!');
+      break;
+    case 'vortex':
+      vortexAmount = 3;
+      showBigMeme('VORTEX!');
+      spawnBarrage('SPINNING');
       break;
   }
   AudioEngine.twitch();
 }
 
-// ========== 角色 ==========
+// ========== Character ==========
 let character = null;
 
 function createCharacter() {
@@ -676,22 +730,22 @@ function createCharacter() {
     rot: 0, rotV: 0,
     scaleX: 1, scaleY: 1,
     targetScaleX: 1, targetScaleY: 1,
-    // 表情
+    // Expression
     pupilX: 0, pupilY: 0,
     pupilSize: 1,
     mouthOpen: 0,
     tongue: 0,
     browAngle: 0,
-    // 动画状态
+    // Animation state
     squash: 1, stretch: 1,
     shakeX: 0, shakeY: 0,
-    // 抽搐
+    // Twitch
     twitchTimer: 0,
-    // 翻转
+    // Flip
     flipping: false, flipProgress: 0,
-    // 残影
+    // Afterimages
     afterimages: [],
-    // 魔性属性
+    // Madness attributes
     hueShift: 0,
     elasticPhase: 0,
     inflation: 0,
@@ -703,7 +757,7 @@ function createCharacter() {
   };
 }
 
-// ========== 场景 ==========
+// ========== Scene ==========
 const scene = {
   moon: { x: 0, y: 0, r: 0, glow: 0 },
   stars: [],
@@ -765,19 +819,24 @@ const scene = {
   }
 };
 
-// ========== 特效 ==========
+// ========== Effects ==========
 const particles = [];
 const barrages = [];
 const BARRAGE_MSGS = [
-  '不给糖就捣蛋！', 'Trick or Treat!', '今晚发疯到天亮', '万圣节快乐', 'Booo!👻',
-  '舞王降临', '魔性全开', '跳到散！', 'Monster Mash!', 'Happy Halloween',
-  '南瓜灯亮了', '幽灵伴舞', '魔法爆炸', '万圣狂欢夜', 'Spooky Scary',
-  '我裂开了', '啊啊啊啊啊', '骨头散架', '头掉了', '好长啊',
-  '谁在挠我', '停止思考', '抽搐警告', '鬼畜模式', '???',
-  'skr~', '芜湖起飞', '就这？', '不会吧', '好家伙',
+  'Trick or Treat!', 'Booo!', 'Happy Halloween', 'Monster Mash!', 'Spooky Scary',
+  'INSANE', 'MADNESS', 'LOL', 'WTF', 'SKRRT',
+  'SEND IT', 'GO OFF', 'NO CAP', 'BFFR', 'BBYGRL',
+  'LMAOOO', 'Crying', 'aaaaaaa', 'help me', 'BONKERS',
+  'GHOST MODE', 'PUMPKIN UP', 'UNHINGED', 'FERAL', 'UNGODLY',
+  'rizz', 'gyatt', 'ohio', 'sigma', 'mewing',
+  'brain rot', '187 stunna', 'WHOP IT', 'SHEESH', 'slay',
+  'cringe but ok', 'touch grass', 'giving MONSTER', 'delulu', 'FR FR',
+  '🎃', '👻', '🦇', '💀', '🕷️', '🧙', '🦴', '🍬',
 ];
 
 function spawnParticles(x, y, count, color) {
+  // Performance: cap total particles
+  if (particles.length > 300) return;
   for (let i = 0; i < count; i++) {
     particles.push({
       x, y,
@@ -811,35 +870,35 @@ function showBigMeme(text) {
   setTimeout(() => { el.style.transition = 'opacity 0.5s'; el.style.opacity = '0'; }, 800);
 }
 
-// ========== 疯狂值 ==========
+// ========== Madness Meter ==========
 let madness = 0;
 function addMadness(v) {
   madness = clamp(madness + v, 0, 100);
   document.getElementById('meter-fill').style.width = madness + '%';
 }
 
-// ========== 暴走 ==========
+// ========== Frenzy ==========
 let frenzyActive = false, frenzyTimer = 0;
 function triggerFrenzy() {
   frenzyActive = true; frenzyTimer = 12;
   AudioEngine.explosion();
   spawnParticles(character.x, character.y, 60, '#ff6600');
-  showBigMeme('💥 暴 走 ！');
-  spawnBarrage('不给糖就捣蛋！');
-  spawnBarrage('啊啊啊啊啊');
+  showBigMeme('💥 FRENZY!');
+  spawnBarrage('Trick or Treat!');
+  spawnBarrage('AAAAAAAAA');
   addMadness(30);
   rainbowAmount = 3;
   screenShake = 1;
   flashAmount = 1;
   glitchAmount = 1;
-  // 连续触发混乱
+  // Trigger chaos continuously
   setTimeout(() => triggerChaos(), 500);
   setTimeout(() => triggerChaos(), 1500);
   setTimeout(() => triggerChaos(), 3000);
   setTimeout(() => triggerChaos(), 5000);
 }
 
-// ========== 交互处理 ==========
+// ========== Interaction Handlers ==========
 let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 let activeTouches = 0, longPressTimer = null;
 let tapCount = 0, lastTapTime = 0;
@@ -880,7 +939,7 @@ function handleLongPress() {
   character.eyePop = 1;
   spawnParticles(character.x, character.y, 20, '#ff3366');
   addMadness(10);
-  showBigMeme('拉～长～');
+  showBigMeme('STRETCH~');
   if (Math.random() < 0.3) triggerChaos();
 }
 
@@ -890,7 +949,7 @@ function handleDoubleFinger() {
   character.flipping = true; character.flipProgress = 0;
   spawnParticles(character.x, character.y, 40);
   addMadness(18);
-  showBigMeme('翻 转！');
+  showBigMeme('FLIP!');
   screenShake = 0.8;
   flashAmount = 0.5;
   if (Math.random() < 0.4) triggerChaos();
@@ -903,8 +962,8 @@ function handleMultiTap() {
   character.eyePop = 2;
   spawnParticles(character.x, character.y, 30);
   addMadness(15);
-  showBigMeme('疯狂抽搐！');
-  spawnBarrage('魔性全开');
+  showBigMeme('SPAZ OUT!');
+  spawnBarrage('INSANE');
   triggerChaos();
 }
 
@@ -912,7 +971,7 @@ function handleShake() {
   triggerFrenzy();
 }
 
-// ========== 输入 ==========
+// ========== Input ==========
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   activeTouches = e.touches.length;
@@ -920,7 +979,7 @@ canvas.addEventListener('touchstart', e => {
   const tch = e.touches[0];
   touchStartX = tch.clientX; touchStartY = tch.clientY;
   touchStartTime = Date.now();
-  // 检测是否点中角色
+  // Check if character is hit
   const dx = tch.clientX - character.x;
   const dy = tch.clientY - character.y;
   if (Math.abs(dx) < 100 && Math.abs(dy) < 100) {
@@ -957,7 +1016,7 @@ canvas.addEventListener('touchend', e => {
   activeTouches = 0;
 }, { passive: false });
 
-// 鼠标
+// Mouse
 let mouseDown = false, mouseSX = 0, mouseSY = 0, mouseST = 0;
 canvas.addEventListener('mousedown', e => {
   mouseDown = true; mouseSX = e.clientX; mouseSY = e.clientY; mouseST = Date.now();
@@ -979,7 +1038,7 @@ canvas.addEventListener('mousemove', e => {
   character.y = e.clientY - dragOffsetY;
 });
 
-// 键盘
+// Keyboard
 window.addEventListener('keydown', e => {
   switch (e.code) {
     case 'Space': e.preventDefault(); handleTap(); break;
@@ -993,7 +1052,7 @@ window.addEventListener('keydown', e => {
   }
 });
 
-// 摇手机
+// Shake phone
 let lastShake = 0, shakeX = 0, shakeY = 0, shakeZ = 0;
 window.addEventListener('devicemotion', e => {
   const a = e.accelerationIncludingGravity;
@@ -1004,7 +1063,7 @@ window.addEventListener('devicemotion', e => {
   shakeX = a.x; shakeY = a.y; shakeZ = a.z;
 });
 
-// ========== UI 按钮 ==========
+// ========== UI Buttons ==========
 let muted = false;
 function toggleMute() {
   muted = !muted;
@@ -1024,7 +1083,7 @@ document.getElementById('close-share').addEventListener('click', () => {
 });
 document.getElementById('copy-code').addEventListener('click', () => {
   const code = document.getElementById('share-code').textContent;
-  navigator.clipboard?.writeText(code).then(() => showBigMeme('已复制！'));
+  navigator.clipboard?.writeText(code).then(() => showBigMeme('COPIED!'));
 });
 document.getElementById('gen-gif').addEventListener('click', () => {
   try {
@@ -1032,8 +1091,8 @@ document.getElementById('gen-gif').addEventListener('click', () => {
     link.download = 'halloween-meme-' + Date.now() + '.png';
     link.href = canvas.toDataURL();
     link.click();
-    showBigMeme('已保存！');
-  } catch (e) { showBigMeme('截图失败'); }
+    showBigMeme('SAVED!');
+  } catch (e) { showBigMeme('CAPTURE FAILED'); }
 });
 document.getElementById('start-btn').addEventListener('click', startGame);
 
@@ -1049,56 +1108,58 @@ function changeCharacter() {
   AudioEngine.ghostWhisper();
   spawnParticles(character.x, character.y, 15);
   showBigMeme(CHARACTERS[currentCharIdx].name);
-  spawnBarrage('换：' + CHARACTERS[currentCharIdx].name);
+  spawnBarrage('SWAP: ' + CHARACTERS[currentCharIdx].name);
   addMadness(3);
 }
 
-// ========== 挂机自动 ==========
+// ========== Idle Auto ==========
 let idleTimer = null;
 function startIdleAuto() {
   if (idleTimer) clearInterval(idleTimer);
   idleTimer = setInterval(() => {
     if (document.hidden) return;
-    // 自动换动作（更频繁）
+    // Auto change moves (more frequent)
     if (Math.random() < 0.8) { randomMove(); addMadness(2); }
-    // 弹幕
+    // Barrage
     if (Math.random() < 0.5) spawnBarrage(pick(BARRAGE_MSGS));
-    // 自动触发混乱事件
+    // Auto trigger chaos events
     if (Math.random() < 0.3) triggerChaos();
-    // 自动触发小抽搐
+    // Auto trigger small twitch
     if (Math.random() < 0.25) { handleTap(); }
-    // 随机粒子
+    // Random particles
     if (Math.random() < 0.3) { spawnParticles(rand(0, W), rand(0, H), 8); }
   }, 1500);
 }
 
-// ========== 主循环 ==========
+// ========== Main Loop ==========
 let lastTime = 0, beatTimer = 0, totalTime = 0;
 let started = false;
 
 function drawScene(dt, t) {
-  // 背景渐变
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, '#0a0612');
-  grad.addColorStop(0.5, '#1a0a2a');
-  grad.addColorStop(1, '#2a1a0a');
-  ctx.fillStyle = grad;
+  // Background (cached gradient)
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // 月亮
+  // Moon
   const m = scene.moon;
   m.glow = Math.sin(t * 0.5) * 0.2 + 0.8;
-  ctx.shadowColor = '#fff8dc'; ctx.shadowBlur = 40 * m.glow;
   ctx.fillStyle = '#fff8dc';
   ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, TAU); ctx.fill();
-  ctx.shadowBlur = 0;
-  // 月坑
+  // Moon glow halo (single radial gradient, no shadowBlur)
+  if (m.glow > 0.5) {
+    const halo = ctx.createRadialGradient(m.x, m.y, m.r, m.x, m.y, m.r * 2.5);
+    halo.addColorStop(0, `rgba(255,248,220,${m.glow * 0.15})`);
+    halo.addColorStop(1, 'rgba(255,248,220,0)');
+    ctx.fillStyle = halo;
+    ctx.fillRect(m.x - m.r * 3, m.y - m.r * 3, m.r * 6, m.r * 6);
+  }
+  // Moon craters
   ctx.fillStyle = 'rgba(200,180,120,0.3)';
   ctx.beginPath(); ctx.arc(m.x - 15, m.y - 10, 8, 0, TAU); ctx.fill();
   ctx.beginPath(); ctx.arc(m.x + 12, m.y + 8, 10, 0, TAU); ctx.fill();
   ctx.beginPath(); ctx.arc(m.x - 5, m.y + 15, 6, 0, TAU); ctx.fill();
 
-  // 星星
+  // Stars (batch fillRect, no shadow)
   for (const s of scene.stars) {
     s.tw += dt * 2;
     const a = 0.3 + Math.sin(s.tw) * 0.3;
@@ -1106,20 +1167,20 @@ function drawScene(dt, t) {
     ctx.fillRect(s.x - s.s / 2, s.y - s.s / 2, s.s, s.s);
   }
 
-  // 萤火虫
+  // Fireflies (no shadowBlur, use additive fill)
+  ctx.globalCompositeOperation = 'screen';
   for (const f of scene.fireflies) {
     f.x += f.vx * dt; f.y += f.vy * dt;
     if (f.x < 0 || f.x > W) f.vx *= -1;
     if (f.y < 0 || f.y > H) f.vy *= -1;
     f.glow += dt * 3;
     const a = 0.3 + Math.sin(f.glow) * 0.3;
-    ctx.fillStyle = `rgba(200,255,100,${a})`;
-    ctx.shadowColor = '#88ff44'; ctx.shadowBlur = 8;
-    ctx.beginPath(); ctx.arc(f.x, f.y, f.size, 0, TAU); ctx.fill();
+    ctx.fillStyle = `rgba(150,255,80,${a})`;
+    ctx.fillRect(f.x - f.size, f.y - f.size, f.size * 2, f.size * 2);
   }
-  ctx.shadowBlur = 0;
+  ctx.globalCompositeOperation = 'source-over';
 
-  // 蝙蝠
+  // Bats
   for (const b of scene.bats) {
     b.x += b.vx * dt; b.y += b.vy * dt;
     b.wing += dt * 10;
@@ -1127,7 +1188,7 @@ function drawScene(dt, t) {
     if (b.x > W) b.vx = -Math.abs(b.vx);
     if (b.y < 30) b.vy = Math.abs(b.vy);
     if (b.y > H * 0.5) b.vy = -Math.abs(b.vy);
-    // 画蝙蝠
+    // Draw bat
     const wf = Math.sin(b.wing) * 0.3;
     ctx.fillStyle = '#1a0011';
     ctx.beginPath();
@@ -1142,7 +1203,7 @@ function drawScene(dt, t) {
     ctx.fill();
   }
 
-  // 枯叶
+  // Dead leaves
   for (const l of scene.leaves) {
     l.x += l.vx * dt; l.y += l.vy * dt; l.rot += l.rotV * dt;
     if (l.y > H) { l.y = -20; l.x = rand(0, W); }
@@ -1154,11 +1215,11 @@ function drawScene(dt, t) {
     ctx.restore();
   }
 
-  // 地面
+  // Ground
   ctx.fillStyle = '#1a0a00';
   ctx.fillRect(0, H * 0.85, W, H * 0.15);
 
-  // 墓碑
+  // Tombstones
   for (const ts of scene.tombstones) {
     ctx.save();
     ctx.translate(ts.x, ts.y); ctx.rotate(ts.lean);
@@ -1171,23 +1232,27 @@ function drawScene(dt, t) {
     ctx.restore();
   }
 
-  // 南瓜灯
+  // Pumpkin lanterns (no shadowBlur, use radial gradient)
   for (const pk of scene.pumpkins) {
     pk.glow += dt * 2;
     const g = 0.5 + Math.sin(pk.glow) * 0.3;
-    ctx.shadowColor = '#ff6600'; ctx.shadowBlur = 20 * g;
+    // Glow halo
+    const halo = ctx.createRadialGradient(pk.x, pk.y, pk.r, pk.x, pk.y, pk.r * 2.5);
+    halo.addColorStop(0, `rgba(255,102,0,${g * 0.3})`);
+    halo.addColorStop(1, 'rgba(255,102,0,0)');
+    ctx.fillStyle = halo;
+    ctx.fillRect(pk.x - pk.r * 3, pk.y - pk.r * 3, pk.r * 6, pk.r * 6);
+    // Body
     ctx.fillStyle = '#cc6600';
     ctx.beginPath(); ctx.ellipse(pk.x, pk.y, pk.r, pk.r * 0.8, 0, 0, TAU); ctx.fill();
-    // 脸
+    // Face
     ctx.fillStyle = '#fff800';
-    ctx.shadowBlur = 10 * g;
     ctx.beginPath(); ctx.moveTo(pk.x - pk.r * 0.4, pk.y - pk.r * 0.2); ctx.lineTo(pk.x - pk.r * 0.2, pk.y - pk.r * 0.2); ctx.lineTo(pk.x - pk.r * 0.3, pk.y); ctx.fill();
     ctx.beginPath(); ctx.moveTo(pk.x + pk.r * 0.2, pk.y - pk.r * 0.2); ctx.lineTo(pk.x + pk.r * 0.4, pk.y - pk.r * 0.2); ctx.lineTo(pk.x + pk.r * 0.3, pk.y); ctx.fill();
     ctx.fillRect(pk.x - pk.r * 0.3, pk.y + pk.r * 0.2, pk.r * 0.6, pk.r * 0.15);
-    ctx.shadowBlur = 0;
   }
 
-  // 蛛网（角落）
+  // Spider webs (corners)
   ctx.strokeStyle = 'rgba(200,200,200,0.15)'; ctx.lineWidth = 1;
   for (const w of scene.spiderWebs) {
     const cx = w.x, cy = w.y;
@@ -1212,34 +1277,34 @@ function drawScene(dt, t) {
 function drawCharacter(dt, t) {
   if (!character) return;
 
-  // 物理更新
+  // Physics update
   character.x += character.vx * dt;
   character.y += character.vy * dt;
   character.vx *= 0.92;
   character.vy *= 0.92;
-  // 边界
+  // Boundaries
   character.x = clamp(character.x, 80, W - 80);
   character.y = clamp(character.y, 100, H - 100);
-  // 重力回中
+  // Gravity pull to center
   character.vy += (H * 0.45 - character.y) * 0.5 * dt;
   character.vx += (W / 2 - character.x) * 0.3 * dt;
 
   character.rot += character.rotV * dt;
   character.rotV *= 0.9;
 
-  // 缩放回弹
+  // Scale bounce
   character.scaleX = lerp(character.scaleX, character.targetScaleX, dt * 8);
   character.scaleY = lerp(character.scaleY, character.targetScaleY, dt * 8);
   character.targetScaleX = lerp(character.targetScaleX, 1, dt * 4);
   character.targetScaleY = lerp(character.targetScaleY, 1, dt * 4);
 
-  // 果冻挤压
+  // Jelly squash
   const beatFreq = AudioEngine.bpm * TAU / 60;
   const beatPunch = Math.pow(1 - (beatTimer / (60 / AudioEngine.bpm)), 3);
   const squash = 1 - beatPunch * 0.15;
   const stretch = 1 + beatPunch * 0.15;
 
-  // 动作动画 —— 全部大幅加强
+  // Move animation — all greatly enhanced
   moveTime += dt;
   if (moveTime >= moveDuration) randomMove();
 
@@ -1333,7 +1398,7 @@ function drawCharacter(dt, t) {
       break;
     case 'idle':
     default:
-      // idle 也要魔性：不停小幅度乱动
+      // idle also needs madness: constant small random motion
       extraY = Math.sin(t * 4) * 8 + Math.sin(t * 7) * 4;
       extraX = Math.sin(t * 3) * 5;
       extraRot = Math.sin(t * 2.5) * 0.15;
@@ -1350,16 +1415,16 @@ function drawCharacter(dt, t) {
   }
   character.eyePop = Math.max(0, character.eyePop - dt * 3);
 
-  // 表情 —— 更疯狂
+  // Expression — more crazy
   character.pupilX = Math.sin(t * 5) * 8 + Math.sin(t * 11) * 5 + (frenzyActive ? rand(-5, 5) : 0);
   character.pupilY = Math.cos(t * 3) * 6 + Math.sin(t * 8) * 4 + (frenzyActive ? rand(-5, 5) : 0);
   character.mouthOpen = (Math.sin(t * beatFreq * 2) + 1) * 0.5;
   character.browAngle = Math.sin(t * 6) * 0.3;
 
-  // 彩虹色
+  // Rainbow color
   if (rainbowAmount > 0) { drawHue = (t * 360 * 3) % 360; }
 
-  // 暴走模式 —— 更加疯狂
+  // Frenzy mode — even crazier
   if (frenzyActive) {
     extraX += rand(-15, 15); extraY += rand(-15, 15);
     extraRot += rand(-0.4, 0.4);
@@ -1371,19 +1436,19 @@ function drawCharacter(dt, t) {
     drawHue = (t * 720) % 360;
   }
 
-  // glitch 偏移
+  // glitch offset
   if (glitchAmount > 0.01) {
     character.glitchOffset.x = rand(-10, 10) * glitchAmount;
     character.glitchOffset.y = rand(-5, 5) * glitchAmount;
     extraX += character.glitchOffset.x;
   }
 
-  // 残影 —— 更密更久
+  // Afterimages — denser and longer
   if (['spin', 'spaz', 'flip', 'breakdance', 'jelly'].includes(currentMove) || frenzyActive || rainbowAmount > 0.5) {
     character.afterimages.push({ x: character.x + extraX, y: character.y + extraY, rot: character.rot + extraRot, life: 0.4, hue: drawHue, sX, sY });
   }
   character.afterimages = character.afterimages.filter(a => { a.life -= dt; return a.life > 0; });
-  // 残影最多保留15个
+  // Keep at most 15 afterimages
   if (character.afterimages.length > 15) character.afterimages.shift();
   for (const a of character.afterimages) {
     ctx.save();
@@ -1397,7 +1462,7 @@ function drawCharacter(dt, t) {
   }
   ctx.filter = 'none';
 
-  // 画角色 —— 带 hue-rotate 和 glitch
+  // Draw character — with hue-rotate and glitch
   ctx.save();
   if (drawHue) ctx.filter = `hue-rotate(${drawHue}deg)`;
   ctx.translate(character.x + extraX, character.y + extraY);
@@ -1407,19 +1472,101 @@ function drawCharacter(dt, t) {
   if (drawFn) drawFn(ctx, t, character);
   ctx.restore();
   ctx.filter = 'none';
+
+  // === Abstract expression overlays ===
+  ctx.save();
+  ctx.translate(character.x + extraX, character.y + extraY);
+  ctx.rotate(character.rot + extraRot);
+  ctx.scale(sX, sY);
+
+  // Spiral eyes (hypno)
+  if (hypnoAmount > 0.1) {
+    ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 2;
+    for (const ex of [-22, 22]) {
+      ctx.beginPath();
+      for (let r = 0; r < 8; r += 0.5) {
+        const a = r * 0.8 + t * 5;
+        ctx.lineTo(ex + Math.cos(a) * r, -10 + Math.sin(a) * r);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // Eye pop: extra circles around eyes
+  if (character.eyePop > 0.3) {
+    ctx.strokeStyle = `rgba(255,0,0,${character.eyePop * 0.5})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(-22, -10, 15 + character.eyePop * 5, 0, TAU); ctx.stroke();
+    ctx.beginPath(); ctx.arc(22, -10, 15 + character.eyePop * 5, 0, TAU); ctx.stroke();
+  }
+
+  // Dizzy stars (when spinning)
+  if (['spin', 'breakdance', 'headspin'].includes(currentMove) || frenzyActive) {
+    for (let i = 0; i < 3; i++) {
+      const a = t * 4 + i * (TAU / 3);
+      const sx = Math.cos(a) * 60;
+      const sy = -60 + Math.sin(a) * 20;
+      ctx.fillStyle = pick(['#ffff00', '#ff6600', '#ff00ff']);
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(a);
+      ctx.beginPath();
+      for (let j = 0; j < 5; j++) {
+        const sa = (j / 5) * TAU - Math.PI / 2;
+        ctx.lineTo(Math.cos(sa) * 6, Math.sin(sa) * 6);
+        ctx.lineTo(Math.cos(sa + 0.3) * 3, Math.sin(sa + 0.3) * 3);
+      }
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // Rage marks (when spazzing)
+  if (currentMove === 'spaz' || frenzyActive) {
+    ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i++) {
+      const ax = -40 + i * 5, ay = -40 - i * 8;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + 15, ay + 15); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ax + 15, ay); ctx.lineTo(ax, ay + 15); ctx.stroke();
+    }
+  }
+
+  // Sweat drops (when inflating)
+  if (currentMove === 'inflate' && character.inflation > 0.5) {
+    ctx.fillStyle = '#44aaff';
+    ctx.beginPath(); ctx.ellipse(-50, -20, 4, 8, 0, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(50, -25, 4, 8, 0, 0, TAU); ctx.fill();
+  }
+
+  // Random floating text above character
+  if (Math.random() < 0.02) {
+    ctx.fillStyle = pick(['#ff6600', '#c8a030', '#3a8c3a', '#ff00ff']);
+    ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(pick(['!?#!', '...', '?!', '...', '!!!', '??']), 0, -80 - rand(0, 20));
+  }
+
+  ctx.restore();
 }
 
 function drawParticles(dt) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     p.x += p.vx * dt; p.y += p.vy * dt;
-    p.vy += p.gravity * dt; p.vx *= 0.98;
+    p.vy += (p.gravity || 400) * dt; p.vx *= 0.98;
     p.life -= dt;
+    if (p.rotV != null) p.rot += p.rotV * dt;
     if (p.life <= 0) { particles.splice(i, 1); continue; }
     const a = p.life / p.maxLife;
-    ctx.fillStyle = p.color;
     ctx.globalAlpha = a;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * a, 0, TAU); ctx.fill();
+    ctx.fillStyle = p.color;
+    if (p.shape === 'rect') {
+      ctx.save();
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0);
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
+      ctx.restore();
+    } else {
+      // Use fillRect for small particles (faster than arc)
+      const s = p.size * a;
+      ctx.fillRect(p.x - s, p.y - s, s * 2, s * 2);
+    }
   }
   ctx.globalAlpha = 1;
 }
@@ -1431,85 +1578,140 @@ function animate(ts) {
   lastTime = ts;
   totalTime += dt;
 
-  // 节拍
+  // Beat
   beatTimer += dt;
   const beatDur = 60 / AudioEngine.bpm;
   if (beatTimer >= beatDur) {
     beatTimer -= beatDur;
     AudioEngine.beat();
-    // 每拍随机小概率触发混乱事件
+    // Small random chance to trigger chaos each beat
     if (Math.random() < 0.12) triggerChaos();
   }
 
-  // 混乱事件自动触发（每隔几秒随机来一次）
+  // Chaos auto-trigger
   chaosTimer += dt;
-  if (chaosTimer > 5 && Math.random() < 0.02) {
+  if (chaosTimer > 3 && Math.random() < 0.03) {
     triggerChaos();
     chaosTimer = 0;
   }
 
-  // 屏幕特效衰减
+  // Screen effect decay
   screenShake = Math.max(0, screenShake - dt * 3);
   glitchAmount = Math.max(0, glitchAmount - dt * 2);
   rainbowAmount = Math.max(0, rainbowAmount - dt);
   flashAmount = Math.max(0, flashAmount - dt * 3);
   invertAmount = Math.max(0, invertAmount - dt * 2);
   warpAmount = Math.max(0, warpAmount - dt);
+  hypnoAmount = Math.max(0, hypnoAmount - dt);
+  zoomPunch = Math.max(0, zoomPunch - dt * 3);
+  vortexAmount = Math.max(0, vortexAmount - dt);
+  rgbSplitAmount = Math.max(0, rgbSplitAmount - dt);
 
-  // 屏幕震动
+  // Screen shake
   if (screenShake > 0.01) {
     screenShakeX = rand(-1, 1) * screenShake * 15;
     screenShakeY = rand(-1, 1) * screenShake * 15;
   } else { screenShakeX = 0; screenShakeY = 0; }
 
-  // 应用屏幕变换
-  ctx.save();
-  ctx.translate(screenShakeX, screenShakeY);
+  // Zoom punch scale
+  const zScale = 1 + zoomPunch * 0.3;
+  const zOffX = (W / 2) * (1 - zScale);
+  const zOffY = (H / 2) * (1 - zScale);
 
-  // 颜色反转
+  // Apply screen transform
+  ctx.save();
+  ctx.translate(screenShakeX + zOffX, screenShakeY + zOffY);
+  ctx.scale(zScale, zScale);
+
+  // Vortex effect: rotate the whole canvas slightly
+  if (vortexAmount > 0.01) {
+    ctx.translate(W / 2, H / 2);
+    ctx.rotate(Math.sin(totalTime * 8) * vortexAmount * 0.3);
+    ctx.translate(-W / 2, -H / 2);
+  }
+
+  // Color invert
   if (invertAmount > 0.01) { ctx.filter = `invert(${invertAmount})`; }
 
   drawScene(dt, totalTime);
   drawCharacter(dt, totalTime);
   drawParticles(dt);
 
+  // RGB split overlay
+  if (rgbSplitAmount > 0.01) {
+    ctx.globalCompositeOperation = 'screen';
+    const off = rgbSplitAmount * 8;
+    ctx.fillStyle = `rgba(255,0,0,${rgbSplitAmount * 0.1})`;
+    ctx.fillRect(-off, 0, W, H);
+    ctx.fillStyle = `rgba(0,0,255,${rgbSplitAmount * 0.1})`;
+    ctx.fillRect(off, 0, W, H);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
   ctx.filter = 'none';
   ctx.restore();
 
-  // 闪光覆盖
+  // Flash overlay
   if (flashAmount > 0.01) {
     ctx.fillStyle = `rgba(255,255,255,${flashAmount * 0.6})`;
     ctx.fillRect(0, 0, W, H);
   }
 
-  // glitch 扫描线
+  // Glitch scanlines
   if (glitchAmount > 0.01) {
-    for (let i = 0; i < 5; i++) {
+    const gl = glitchAmount;
+    for (let i = 0; i < 4; i++) {
       const y = rand(0, H);
-      ctx.fillStyle = `rgba(${rand(200, 255)|0},0,${rand(100, 200)|0},${glitchAmount * 0.3})`;
-      ctx.fillRect(0, y, W, rand(2, 8));
+      ctx.fillStyle = `rgba(${rand(200, 255)|0},0,${rand(100, 200)|0},${gl * 0.3})`;
+      ctx.fillRect(0, y, W, rand(2, 6));
     }
-    // RGB 分离效果
     ctx.globalCompositeOperation = 'screen';
-    ctx.fillStyle = `rgba(255,0,0,${glitchAmount * 0.15})`;
+    ctx.fillStyle = `rgba(255,0,0,${gl * 0.12})`;
     ctx.fillRect(rand(-5, 5), 0, W, H);
-    ctx.fillStyle = `rgba(0,255,255,${glitchAmount * 0.15})`;
+    ctx.fillStyle = `rgba(0,255,255,${gl * 0.12})`;
     ctx.fillRect(rand(-5, 5), 0, W, H);
     ctx.globalCompositeOperation = 'source-over';
   }
 
-  // 暴走计时
+  // Hypno spiral overlay
+  if (hypnoAmount > 0.01) {
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+    ctx.rotate(totalTime * 3);
+    ctx.globalAlpha = hypnoAmount * 0.3;
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * TAU;
+      ctx.strokeStyle = i % 2 ? '#ff00ff' : '#00ffff';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * 300, Math.sin(a) * 300);
+      ctx.stroke();
+    }
+    // Spiral
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let r = 0; r < 200; r += 2) {
+      const a = r * 0.1;
+      ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Frenzy timer
   if (frenzyActive) {
     frenzyTimer -= dt;
     if (frenzyTimer <= 0) frenzyActive = false;
   }
 
-  // 疯狂值衰减
+  // Madness decay
   madness = Math.max(0, madness - dt * 2);
   document.getElementById('meter-fill').style.width = madness + '%';
 }
 
-// ========== 启动 ==========
+// ========== Start ==========
 function startGame() {
   document.getElementById('start-screen').style.display = 'none';
   AudioEngine.init();
@@ -1521,8 +1723,8 @@ function startGame() {
   lastTime = performance.now();
   animate(lastTime);
   setTimeout(() => { AudioEngine.startBGM(); }, 300);
-  setTimeout(() => { showBigMeme('万圣夜发疯！'); }, 500);
-  setTimeout(() => { spawnBarrage('万圣节不捣蛋，今晚一起发疯跳到散'); }, 1000);
+  setTimeout(() => { showBigMeme('HALLOWEEN MADNESS!'); }, 500);
+  setTimeout(() => { spawnBarrage('No tricks, just treats. Go insane tonight!'); }, 1000);
 }
 
 window.MonsterDance = { triggerFrenzy, changeCharacter, setMove, randomMove };

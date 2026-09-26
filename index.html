@@ -580,12 +580,28 @@ const CharDraw = {
 };
 
 // ========== Dance Moves ==========
-const MOVES = ['idle', 'twitch', 'wiggle', 'spin', 'bounce', 'shake', 'flip', 'wobble', 'stretch', 'spaz', 'jelly', 'breakdance', 'headspin', 'inflate', 'dab'];
+const MOVES = ['idle', 'twitch', 'wiggle', 'spin', 'bounce', 'shake', 'flip', 'wobble', 'stretch', 'spaz', 'jelly', 'breakdance', 'headspin', 'inflate', 'dab',
+  'floss', 'orange_justice', 'griddy', 'renegade', 'carlton', 'robot', 'disco', 'gangnam', 'macarena', 'chicken'];
 let currentMove = 'idle';
 let moveTime = 0, moveDuration = 2;
 
-function setMove(m) { currentMove = m; moveTime = 0; moveDuration = rand(0.8, 2.2); }
+function setMove(m) { currentMove = m; moveTime = 0; moveDuration = rand(0.8, 2.2); showDanceName(m); }
 function randomMove() { setMove(pick(MOVES)); }
+
+// Show dance name as big meme text
+const DANCE_NAMES = {
+  idle: 'CHILL', twitch: 'TWITCH!', wiggle: 'WIGGLE', spin: 'SPIN!',
+  bounce: 'BOUNCE!', shake: 'SHAKE!', flip: 'FLIP!', wobble: 'WOBBLE',
+  stretch: 'STRETCH~', spaz: 'SPAZ OUT!', jelly: 'JELLY', breakdance: 'B-BOY!',
+  headspin: 'HEADSPIN!', inflate: 'INFLATE!', dab: 'DAB!',
+  floss: 'FLOSS!', orange_justice: 'ORANGE JUSTICE!', griddy: 'GRIDDY!',
+  renegade: 'RENEGADE!', carlton: 'CARLTON!', robot: 'ROBOT', disco: 'DISCO!',
+  gangnam: 'GANGNAM!', macarena: 'MACARENA!', chicken: 'CHICKEN!',
+};
+function showDanceName(m) {
+  const name = DANCE_NAMES[m] || m.toUpperCase();
+  showBigMeme(name);
+}
 
 // ========== Chaos System: random meme events ==========
 const CHAOS_EVENTS = [
@@ -831,6 +847,8 @@ const BARRAGE_MSGS = [
   'rizz', 'gyatt', 'ohio', 'sigma', 'mewing',
   'brain rot', '187 stunna', 'WHOP IT', 'SHEESH', 'slay',
   'cringe but ok', 'touch grass', 'giving MONSTER', 'delulu', 'FR FR',
+  'FLOSS!', 'GRIDDY', 'RENEGADE', 'CARLTON', 'GANGNAM STYLE',
+  'ORANGE JUSTICE', 'DAB!', 'MACARENA', 'DISCO INFERNO', 'B-BOY!',
   '🎃', '👻', '🦇', '💀', '🕷️', '🧙', '🦴', '🍬',
 ];
 
@@ -1118,17 +1136,21 @@ function startIdleAuto() {
   if (idleTimer) clearInterval(idleTimer);
   idleTimer = setInterval(() => {
     if (document.hidden) return;
-    // Auto change moves (more frequent)
-    if (Math.random() < 0.8) { randomMove(); addMadness(2); }
+    // Auto change dance moves — favor the new meme dances
+    if (Math.random() < 0.9) {
+      const danceMoves = MOVES.filter(m => m !== 'idle');
+      setMove(pick(danceMoves));
+      addMadness(2);
+    }
     // Barrage
-    if (Math.random() < 0.5) spawnBarrage(pick(BARRAGE_MSGS));
+    if (Math.random() < 0.6) spawnBarrage(pick(BARRAGE_MSGS));
     // Auto trigger chaos events
-    if (Math.random() < 0.3) triggerChaos();
+    if (Math.random() < 0.35) triggerChaos();
     // Auto trigger small twitch
-    if (Math.random() < 0.25) { handleTap(); }
+    if (Math.random() < 0.3) { handleTap(); }
     // Random particles
     if (Math.random() < 0.3) { spawnParticles(rand(0, W), rand(0, H), 8); }
-  }, 1500);
+  }, 1200);
 }
 
 // ========== Main Loop ==========
@@ -1274,6 +1296,174 @@ function drawScene(dt, t) {
   }
 }
 
+// Draw arms & legs that respond to dance moves
+function drawLimbs(ctx, t, char) {
+  const color = '#222';
+  const skin = '#f5c089';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const move = currentMove;
+
+  // Arm helper: draws a 2-segment arm from shoulder to hand
+  function arm(side, shoulderAngle, elbowAngle, len1, len2) {
+    const sign = side === 'left' ? -1 : 1;
+    const sx = sign * 70, sy = 10;
+    ctx.strokeStyle = color; ctx.lineWidth = 10;
+    ctx.beginPath(); ctx.moveTo(sx, sy);
+    const ex = sx + Math.cos(shoulderAngle) * len1 * sign;
+    const ey = sy + Math.sin(shoulderAngle) * len1;
+    ctx.lineTo(ex, ey); ctx.stroke();
+    const hx = ex + Math.cos(elbowAngle) * len2 * sign;
+    const hy = ey + Math.sin(elbowAngle) * len2;
+    ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(hx, hy); ctx.stroke();
+    // Hand
+    ctx.fillStyle = skin;
+    ctx.beginPath(); ctx.arc(hx, hy, 7, 0, TAU); ctx.fill();
+  }
+
+  // Leg helper
+  function leg(side, hipAngle, kneeAngle, len1, len2) {
+    const sign = side === 'left' ? -1 : 1;
+    const hx = sign * 35, hy = 65;
+    ctx.strokeStyle = color; ctx.lineWidth = 11;
+    ctx.beginPath(); ctx.moveTo(hx, hy);
+    const kx = hx + Math.sin(hipAngle) * len1 * sign;
+    const ky = hy + Math.cos(hipAngle) * len1;
+    ctx.lineTo(kx, ky); ctx.stroke();
+    const fx = kx + Math.sin(kneeAngle) * len2 * sign;
+    const fy = ky + Math.cos(kneeAngle) * len2;
+    ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx, fy); ctx.stroke();
+    // Foot
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.ellipse(fx + sign * 6, fy + 3, 9, 5, 0, 0, TAU); ctx.fill();
+  }
+
+  // Default resting pose
+  let lShoulder = Math.PI * 0.6, rShoulder = Math.PI * 0.6;
+  let lElbow = Math.PI * 0.3, rElbow = Math.PI * 0.3;
+  let lHip = 0, rHip = 0;
+  let lKnee = 0.1, rKnee = 0.1;
+  const A = 50, B = 40; // arm lengths
+  const L1 = 40, L2 = 35; // leg lengths
+
+  switch (move) {
+    case 'floss':
+      // arms swing rapidly between front and back of body
+      const fp = char.flossArm || 0;
+      lShoulder = Math.PI * 0.5 + fp * 1.2;
+      rShoulder = Math.PI * 0.5 - fp * 1.2;
+      lElbow = 0.2; rElbow = 0.2;
+      lHip = fp * 0.3; rHip = -fp * 0.3;
+      break;
+    case 'orange_justice':
+      const oj = char.ojPhase || 0;
+      lShoulder = Math.PI * 0.5 + Math.sin(oj) * 0.6;
+      rShoulder = Math.PI * 0.5 + Math.sin(oj + 1) * 0.6;
+      lElbow = 0.5 + Math.sin(oj * 2) * 0.3;
+      rElbow = 0.5 + Math.sin(oj * 2 + 1) * 0.3;
+      lHip = Math.sin(oj) * 0.3; rHip = Math.sin(oj + 1) * 0.3;
+      break;
+    case 'griddy':
+      const gr = char.griddyPhase || 0;
+      // alternating shoulder tap
+      lShoulder = Math.PI * 0.3 + (gr > 0 ? -0.8 : 0);
+      rShoulder = Math.PI * 0.3 + (gr < 0 ? -0.8 : 0);
+      lElbow = 0.8; rElbow = 0.8;
+      lHip = gr * 0.3; rHip = -gr * 0.3;
+      lKnee = gr > 0 ? 0.5 : 0.1; rKnee = gr < 0 ? 0.5 : 0.1;
+      break;
+    case 'renegade':
+      const rn = char.renegadePhase || 0;
+      lShoulder = Math.PI * 0.5 + Math.sin(rn) * 0.8;
+      rShoulder = Math.PI * 0.5 + Math.sin(rn + 2) * 0.8;
+      lElbow = Math.sin(rn * 2) * 0.6;
+      rElbow = Math.sin(rn * 2 + 1) * 0.6;
+      lHip = Math.sin(rn * 1.5) * 0.3; rHip = Math.sin(rn * 1.5 + 1) * 0.3;
+      break;
+    case 'carlton':
+      const cr = char.carltonPhase || 0;
+      // big arm swings
+      lShoulder = Math.PI * 0.5 + Math.sin(cr) * 1.3;
+      rShoulder = Math.PI * 0.5 + Math.sin(cr + Math.PI) * 1.3;
+      lElbow = 0.3; rElbow = 0.3;
+      lHip = Math.sin(cr) * 0.2; rHip = -Math.sin(cr) * 0.2;
+      break;
+    case 'robot':
+      // mechanical arm poses
+      const rb = char.robotStep || 0;
+      const poses = [
+        [Math.PI * 0.3, Math.PI * 0.3, 0.1, 0.1],
+        [Math.PI * 0.7, Math.PI * 0.3, 0.4, 0.1],
+        [Math.PI * 0.3, Math.PI * 0.7, 0.1, 0.4],
+        [Math.PI * 0.7, Math.PI * 0.7, 0.4, 0.4],
+      ];
+      const p = poses[rb];
+      lShoulder = p[0]; rShoulder = p[1]; lElbow = p[2]; rElbow = p[3];
+      lHip = 0; rHip = 0; lKnee = 0; rKnee = 0;
+      break;
+    case 'disco':
+      // one arm points up
+      const dp = char.discoPoint || 1;
+      lShoulder = -Math.PI * 0.3;
+      rShoulder = -Math.PI * 0.3;
+      lElbow = 0; rElbow = 0;
+      if (dp > 0) { lShoulder = -Math.PI * 0.8; rShoulder = -Math.PI * 0.2; }
+      else { lShoulder = -Math.PI * 0.2; rShoulder = -Math.PI * 0.8; }
+      lHip = 0.2; rHip = -0.2;
+      break;
+    case 'gangnam':
+      const ga = char.gangnamArm || 0;
+      // lasso-style arm
+      lShoulder = Math.PI * 0.4 + ga * 0.5;
+      rShoulder = Math.PI * 0.4 + ga * 0.5;
+      lElbow = 0.3; rElbow = 0.3;
+      lHip = ga * 0.4; rHip = -ga * 0.4;
+      lKnee = 0.5; rKnee = 0.5;
+      break;
+    case 'macarena':
+      // sequential arm positions
+      const mc = char.macarenaStep || 0;
+      const macPoses = [
+        [Math.PI * 0.3, Math.PI * 0.3, 0.1, 0.1],
+        [Math.PI * 0.5, Math.PI * 0.3, 0.1, 0.1],
+        [Math.PI * 0.5, Math.PI * 0.5, 0.1, 0.1],
+        [Math.PI * 0.7, Math.PI * 0.5, 0.1, 0.1],
+        [Math.PI * 0.7, Math.PI * 0.7, 0.1, 0.1],
+        [Math.PI * 0.3, Math.PI * 0.7, 0.1, 0.1],
+      ];
+      const mp = macPoses[mc];
+      lShoulder = mp[0]; rShoulder = mp[1]; lElbow = mp[2]; rElbow = mp[3];
+      break;
+    case 'chicken':
+      // flap arms like wings
+      const cf = char.chickenFlap || 0;
+      lShoulder = Math.PI * 0.3 - cf * 1.2;
+      rShoulder = Math.PI * 0.3 - cf * 1.2;
+      lElbow = 0.1; rElbow = 0.1;
+      lHip = 0; rHip = 0;
+      break;
+    case 'dab':
+      lShoulder = -Math.PI * 0.6; rShoulder = -Math.PI * 0.1;
+      lElbow = 0.5; rElbow = 0.3;
+      break;
+    case 'spin': case 'headspin': case 'breakdance':
+      // spinning: arms out
+      lShoulder = 0; rShoulder = 0;
+      lElbow = 0.1; rElbow = 0.1;
+      break;
+    case 'bounce':
+      lHip = Math.sin(t * 6) * 0.3; rHip = -Math.sin(t * 6) * 0.3;
+      lKnee = 0.4; rKnee = 0.4;
+      break;
+  }
+
+  // Draw legs then arms
+  leg('left', lHip, lKnee, L1, L2);
+  leg('right', rHip, rKnee, L1, L2);
+  arm('left', lShoulder, lElbow, A, B);
+  arm('right', rShoulder, rElbow, A, B);
+}
+
 function drawCharacter(dt, t) {
   if (!character) return;
 
@@ -1396,6 +1586,98 @@ function drawCharacter(dt, t) {
       extraX = 20;
       sX *= 1.1; sY *= 1.1;
       break;
+    // === Iconic meme dances ===
+    case 'floss':
+      // rapid left-right hip sway, arms swing opposite
+      const flossPhase = t * 14;
+      extraX = Math.sin(flossPhase) * 25;
+      extraRot = Math.sin(flossPhase) * 0.35;
+      sX *= 1 + Math.sin(flossPhase * 2) * 0.15;
+      character.flossArm = Math.sin(flossPhase);
+      break;
+    case 'orange_justice':
+      // circular shoulder shimmy + hip rotation
+      const oj = t * 9;
+      extraX = Math.cos(oj) * 18;
+      extraY = Math.sin(oj * 2) * 12 - 5;
+      extraRot = Math.sin(oj) * 0.4;
+      sX *= 1 + Math.sin(oj * 3) * 0.12;
+      character.ojPhase = oj;
+      break;
+    case 'griddy':
+      // alternating shoulder tap + small hops
+      const gr = Math.sin(t * 12);
+      extraX = gr * 15;
+      extraY = Math.abs(gr) * -15;
+      extraRot = gr * 0.2;
+      sY *= 1 + gr * 0.1;
+      character.griddyPhase = gr;
+      break;
+    case 'renegade':
+      // body roll + arm pop
+      const rn = t * 6;
+      extraX = Math.sin(rn) * 12;
+      extraY = Math.sin(rn * 2) * -10;
+      extraRot = Math.sin(rn * 1.5) * 0.3;
+      sX *= 1 + Math.sin(rn * 2) * 0.1;
+      sY *= 1 - Math.sin(rn * 2) * 0.08;
+      character.renegadePhase = rn;
+      break;
+    case 'carlton':
+      // big side-to-side sway
+      const cr = t * 5;
+      extraX = Math.sin(cr) * 35;
+      extraRot = Math.sin(cr) * 0.5;
+      extraY = Math.abs(Math.sin(cr)) * -8;
+      sX *= 1 + Math.sin(cr * 2) * 0.12;
+      character.carltonPhase = cr;
+      break;
+    case 'robot':
+      // mechanical jerky snap movements
+      const rb = Math.floor(t * 4) % 4;
+      const rbMap = [0, -20, 0, 20];
+      extraX = rbMap[rb];
+      extraRot = (rb - 1.5) * 0.15;
+      sX *= rb === 1 ? 1.1 : 1;
+      sY *= rb === 3 ? 0.95 : 1;
+      character.robotStep = rb;
+      break;
+    case 'disco':
+      // point up + hip thrust
+      const dc = t * 4;
+      extraY = Math.sin(dc) * -20;
+      extraRot = Math.sin(dc * 0.5) * 0.25;
+      sX *= 1 + Math.sin(dc * 2) * 0.15;
+      sY *= 1 - Math.sin(dc * 2) * 0.1;
+      character.discoPoint = Math.sin(dc) > 0 ? 1 : -1;
+      break;
+    case 'gangnam':
+      // gallop bounce + arm sweep
+      const gn = t * 8;
+      extraY = Math.abs(Math.sin(gn)) * -35;
+      extraX = Math.sin(gn * 0.5) * 10;
+      extraRot = Math.sin(gn) * 0.2;
+      sY *= 1 - Math.sin(gn) * 0.2;
+      sX *= 1 + Math.sin(gn) * 0.12;
+      character.gangnamArm = Math.sin(gn * 0.5);
+      break;
+    case 'macarena':
+      // sequential arm positions
+      const mc = Math.floor(t * 2) % 6;
+      extraRot = (mc - 2.5) * 0.1;
+      extraX = Math.sin(t * 4) * 8;
+      sX *= 1.05;
+      character.macarenaStep = mc;
+      break;
+    case 'chicken':
+      // flap arms + head bob
+      const ck = t * 10;
+      extraY = Math.sin(ck) * 12;
+      extraRot = Math.sin(ck * 0.5) * 0.3;
+      sY *= 1 - Math.sin(ck) * 0.15;
+      sX *= 1 + Math.sin(ck) * 0.1;
+      character.chickenFlap = Math.abs(Math.sin(ck));
+      break;
     case 'idle':
     default:
       // idle also needs madness: constant small random motion
@@ -1468,6 +1750,10 @@ function drawCharacter(dt, t) {
   ctx.translate(character.x + extraX, character.y + extraY);
   ctx.rotate(character.rot + extraRot);
   ctx.scale(sX, sY);
+
+  // Draw limbs (behind face)
+  drawLimbs(ctx, t, character);
+
   const drawFn = CharDraw[character.type];
   if (drawFn) drawFn(ctx, t, character);
   ctx.restore();
